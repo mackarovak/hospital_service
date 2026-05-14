@@ -15,3 +15,12 @@ def test_health_check():
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_database_health_check_uses_configured_database():
+    client = Client()
+
+    response = client.get("/api/v1/health/db")
+
+    assert response.status_code == 200
+    assert response.json() == {"database": 1}
