@@ -1,0 +1,9 @@
+Django
+djangorestframework
+django-cors-headers
+psycopg[binary]
+python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+pytest
+httpx
