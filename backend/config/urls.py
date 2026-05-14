@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db import connection
 from django.http import JsonResponse
 from django.urls import path
+from medical import patient_views
 from medical import views as medical_views
 
 
@@ -25,4 +26,6 @@ urlpatterns = [
     path("api/v1/me", medical_views.me, name="me"),
     path("api/v1/patient/check", medical_views.patient_check, name="patient-check"),
     path("api/v1/doctor/check", medical_views.doctor_check, name="doctor-check"),
+    path("api/v1/patient/medical-card", patient_views.medical_card, name="patient-medical-card"),
+    path("api/v1/patient/profile", patient_views.update_profile, name="patient-profile"),
 ]
