@@ -14,26 +14,21 @@ from medical.models import (
     User,
     UserRole,
 )
-from medical.security import create_access_token, hash_password
+from medical.security import create_access_token
+
+
+def _make_user(login, role):
+    user = User(login=login, role=role)
+    user.set_password("password")
+    user.save()
+    return user
 
 
 @pytest.fixture
 def patient_context(db):
-    patient_user = User.objects.create(
-        login="patient1",
-        password_hash=hash_password("password"),
-        role=UserRole.PATIENT,
-    )
-    other_patient_user = User.objects.create(
-        login="patient2",
-        password_hash=hash_password("password"),
-        role=UserRole.PATIENT,
-    )
-    doctor_user = User.objects.create(
-        login="doctor1",
-        password_hash=hash_password("password"),
-        role=UserRole.DOCTOR,
-    )
+    patient_user = _make_user("patient1", UserRole.PATIENT)
+    other_patient_user = _make_user("patient2", UserRole.PATIENT)
+    doctor_user = _make_user("doctor1", UserRole.DOCTOR)
 
     patient = Patient.objects.create(
         user=patient_user,
