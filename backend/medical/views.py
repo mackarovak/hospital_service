@@ -6,7 +6,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from medical.deps import auth_required, role_required
 from medical.models import User, UserRole
-from medical.security import create_access_token, verify_password
+from medical.security import create_access_token
 
 
 def _user_payload(user: User) -> dict:
@@ -39,7 +39,7 @@ def login(request):
     if not user.is_active:
         return JsonResponse({"detail": "User is inactive"}, status=403)
 
-    if not verify_password(password, user.password_hash):
+    if not user.check_password(password):
         return JsonResponse({"detail": "Invalid login or password"}, status=401)
 
     return JsonResponse(

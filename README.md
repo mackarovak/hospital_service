@@ -4,7 +4,7 @@
 
 ## Stack
 
-- Backend: Python + FastAPI
+- Backend: Python + Django
 - Frontend: React + TypeScript + Tailwind CSS
 - Database: PostgreSQL
 

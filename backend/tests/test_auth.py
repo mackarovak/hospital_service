@@ -9,20 +9,18 @@ from medical.security import create_access_token, decode_access_token, hash_pass
 
 @pytest.fixture
 def patient_user(db):
-    return User.objects.create(
-        login="patient1",
-        password_hash=hash_password("password"),
-        role=UserRole.PATIENT,
-    )
+    user = User(login="patient1", role=UserRole.PATIENT)
+    user.set_password("password")
+    user.save()
+    return user
 
 
 @pytest.fixture
 def doctor_user(db):
-    return User.objects.create(
-        login="doctor1",
-        password_hash=hash_password("password"),
-        role=UserRole.DOCTOR,
-    )
+    user = User(login="doctor1", role=UserRole.DOCTOR)
+    user.set_password("password")
+    user.save()
+    return user
 
 
 def _login(client: Client, login: str, password: str):
@@ -122,7 +120,7 @@ def test_seed_script_creates_demo_data():
     patient = Patient.objects.get(user=patient_user)
     doctor = Doctor.objects.get(user=doctor_user)
 
-    assert verify_password("password", patient_user.password_hash)
-    assert verify_password("password", doctor_user.password_hash)
+    assert patient_user.check_password("password")
+    assert doctor_user.check_password("password")
     assert MedicalCard.objects.filter(patient=patient).exists()
     assert DoctorPatient.objects.filter(doctor=doctor, patient=patient).exists()

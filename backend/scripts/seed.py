@@ -12,26 +12,21 @@ import django
 django.setup()
 
 from medical.models import Doctor, DoctorPatient, MedicalCard, Patient, User, UserRole
-from medical.security import hash_password
+
+
+def _upsert_user(login, role):
+    user, _ = User.objects.update_or_create(
+        login=login,
+        defaults={"role": role, "is_active": True},
+    )
+    user.set_password("password")
+    user.save(update_fields=["password"])
+    return user
 
 
 def seed():
-    patient_user, _ = User.objects.update_or_create(
-        login="patient1",
-        defaults={
-            "password_hash": hash_password("password"),
-            "role": UserRole.PATIENT,
-            "is_active": True,
-        },
-    )
-    doctor_user, _ = User.objects.update_or_create(
-        login="doctor1",
-        defaults={
-            "password_hash": hash_password("password"),
-            "role": UserRole.DOCTOR,
-            "is_active": True,
-        },
-    )
+    patient_user = _upsert_user("patient1", UserRole.PATIENT)
+    doctor_user = _upsert_user("doctor1", UserRole.DOCTOR)
 
     patient, _ = Patient.objects.update_or_create(
         user=patient_user,
