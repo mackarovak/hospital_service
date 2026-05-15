@@ -42,6 +42,8 @@ class BloodType(models.TextChoices):
 
 
 class UserManager(BaseUserManager):
+    use_in_migrations = True
+
     def create_user(self, login, role, raw_password, **extra_fields):
         user = self.model(login=login, role=role, **extra_fields)
         user.set_password(raw_password)
