@@ -1,11 +1,5 @@
-import os
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-
-import django
+import pytest
 from django.test import Client
-
-django.setup()
 
 
 def test_health_check():
@@ -17,6 +11,7 @@ def test_health_check():
     assert response.json() == {"status": "ok"}
 
 
+@pytest.mark.django_db
 def test_database_health_check_uses_configured_database():
     client = Client()
 
