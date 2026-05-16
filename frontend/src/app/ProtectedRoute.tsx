@@ -17,7 +17,14 @@ export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) 
   }
 
   if (!allowedRoles.includes(role)) {
-    return <Navigate to={role === "DOCTOR" ? "/doctor" : "/patient"} replace />;
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-7xl font-bold text-slate-200">403</p>
+          <p className="mt-2 text-slate-600">Доступ запрещён</p>
+        </div>
+      </main>
+    );
   }
 
   return children;
