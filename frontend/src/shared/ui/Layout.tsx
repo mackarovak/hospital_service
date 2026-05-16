@@ -21,9 +21,17 @@ export function Layout() {
           </Link>
           <nav className="flex items-center gap-4 text-sm text-slate-600">
             {role === "PATIENT" && (
-              <Link className="hover:text-slate-950" to="/patient/medical-card">
-                Медкарта
-              </Link>
+              <>
+                <Link className="hover:text-slate-950" to="/patient">
+                  Главная
+                </Link>
+                <Link className="hover:text-slate-950" to="/patient/medical-card">
+                  Моя медкарта
+                </Link>
+                <Link className="hover:text-slate-950" to="/patient/profile">
+                  Мои данные
+                </Link>
+              </>
             )}
             {role === "DOCTOR" && (
               <Link className="hover:text-slate-950" to="/doctor/patients">
