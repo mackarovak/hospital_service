@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -72,7 +73,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-if os.getenv("DATABASE_ENGINE") == "postgres":
+IS_TESTING = any("pytest" in arg for arg in sys.argv)
+
+if os.getenv("DATABASE_ENGINE") == "postgres" and not IS_TESTING:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

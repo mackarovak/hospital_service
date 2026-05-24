@@ -8,7 +8,6 @@ from django.utils import timezone
 from medical.models import (
     Doctor,
     DoctorPatient,
-    MedicalCard,
     MedicalRecord,
     Patient,
     User,
@@ -55,8 +54,12 @@ def patient_context(db):
         middle_name="Petrovich",
     )
 
-    medical_card = MedicalCard.objects.create(patient=patient, card_number="MC-0001")
-    other_medical_card = MedicalCard.objects.create(patient=other_patient, card_number="MC-0002")
+    medical_card = patient.medical_card
+    medical_card.card_number = "MC-0001"
+    medical_card.save(update_fields=["card_number"])
+    other_medical_card = other_patient.medical_card
+    other_medical_card.card_number = "MC-0002"
+    other_medical_card.save(update_fields=["card_number"])
     DoctorPatient.objects.create(doctor=doctor, patient=patient)
     record = MedicalRecord.objects.create(
         medical_card=medical_card,

@@ -64,8 +64,28 @@ def test_login_returns_token_and_user(patient_user):
     }
 
 
+def test_doctor_login_returns_token_and_user(doctor_user):
+    response = _login(Client(), "doctor1", "password")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["token_type"] == "bearer"
+    assert body["access_token"]
+    assert body["user"] == {
+        "id": str(doctor_user.id),
+        "login": "doctor1",
+        "role": UserRole.DOCTOR,
+    }
+
+
 def test_login_rejects_wrong_password(patient_user):
     response = _login(Client(), "patient1", "wrong")
+
+    assert response.status_code == 401
+
+
+def test_login_rejects_unknown_login(db):
+    response = _login(Client(), "missing", "password")
 
     assert response.status_code == 401
 
