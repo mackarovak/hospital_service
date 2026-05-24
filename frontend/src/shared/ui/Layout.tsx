@@ -34,9 +34,14 @@ export function Layout() {
               </>
             )}
             {role === "DOCTOR" && (
-              <Link className="hover:text-slate-950" to="/doctor/patients">
-                Пациенты
-              </Link>
+              <>
+                <Link className="hover:text-slate-950" to="/doctor">
+                  Главная
+                </Link>
+                <Link className="hover:text-slate-950" to="/doctor/patients">
+                  Мои пациенты
+                </Link>
+              </>
             )}
             <button className="hover:text-slate-950" onClick={handleLogout}>
               Выйти

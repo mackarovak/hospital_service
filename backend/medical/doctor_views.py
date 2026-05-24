@@ -33,6 +33,16 @@ def _medical_card_payload(patient: Patient) -> dict:
     }
 
 
+def _doctor_payload(doctor: Doctor) -> dict:
+    parts = [doctor.last_name, doctor.first_name, doctor.middle_name]
+    return {
+        "id": str(doctor.id),
+        "full_name": " ".join(part for part in parts if part),
+        "specialization": doctor.specialization,
+        "office_number": doctor.office_number,
+    }
+
+
 def _doctor_patient_payload(patient: Patient) -> dict:
     return {
         "id": str(patient.id),
@@ -117,6 +127,7 @@ def patients(request):
 
     return JsonResponse(
         {
+            "doctor": _doctor_payload(doctor),
             "items": [_doctor_patient_payload(patient) for patient in items],
             "page": page,
             "limit": limit,
@@ -141,6 +152,7 @@ def patient_medical_card(request, patient_id):
 
     return JsonResponse(
         {
+            "current_doctor": _doctor_payload(doctor),
             "patient": _doctor_medical_card_patient_payload(patient),
             "medical_card": _medical_card_payload(patient),
             "records": [_record_payload(record) for record in records],

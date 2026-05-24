@@ -20,6 +20,7 @@ export type MedicalCard = {
 
 export type MedicalRecord = {
   id: string;
+  doctor_id?: string;
   record_date: string;
   doctor_full_name: string;
   complaints: string | null;
@@ -30,6 +31,45 @@ export type MedicalRecord = {
 
 export type PatientMedicalCardResponse = {
   patient: PatientProfile;
+  medical_card: MedicalCard;
+  records: MedicalRecord[];
+};
+
+export type DoctorProfile = {
+  id: string;
+  full_name: string;
+  specialization: string | null;
+  office_number?: string | null;
+};
+
+export type DoctorPatientListItem = {
+  id: string;
+  full_name: string;
+  date_of_birth: string | null;
+  card_number: string;
+};
+
+export type DoctorPatientsResponse = {
+  doctor: DoctorProfile;
+  items: DoctorPatientListItem[];
+  page: number;
+  limit: number;
+  total: number;
+};
+
+export type DoctorMedicalCardPatient = {
+  id: string;
+  full_name: string;
+  date_of_birth: string | null;
+  gender: string | null;
+  phone: string | null;
+  allergies: string | null;
+  chronic_conditions: string | null;
+};
+
+export type DoctorMedicalCardResponse = {
+  current_doctor: DoctorProfile;
+  patient: DoctorMedicalCardPatient;
   medical_card: MedicalCard;
   records: MedicalRecord[];
 };

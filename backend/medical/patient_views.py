@@ -57,6 +57,7 @@ def _doctor_full_name(record: MedicalRecord) -> str:
 def _record_payload(record: MedicalRecord) -> dict:
     return {
         "id": str(record.id),
+        "doctor_id": str(record.doctor_id),
         "record_date": record.record_date.isoformat(),
         "doctor_full_name": _doctor_full_name(record),
         "complaints": record.complaints,
