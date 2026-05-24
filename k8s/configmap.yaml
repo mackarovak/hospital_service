@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: medcat-config
+data:
+  DATABASE_ENGINE: postgres
+  POSTGRES_HOST: medcat-db
+  POSTGRES_PORT: "5432"
+  DJANGO_DEBUG: "True"
+  DJANGO_ALLOWED_HOSTS: "*"
+  FRONTEND_URL: http://medcat-team1.213-165-209-28.nip.io
+  JWT_ALGORITHM: HS256
+  ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+  VITE_API_URL: http://medcat-team1.213-165-209-28.nip.io/api/v1

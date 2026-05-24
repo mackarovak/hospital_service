@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medcat-frontend
+  labels:
+    app: medcat-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: medcat-frontend
+  template:
+    metadata:
+      labels:
+        app: medcat-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/mackarovak/hospital_service-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5173
+          env:
+            - name: VITE_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: medcat-config
+                  key: VITE_API_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5173
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medcat-frontend
+spec:
+  selector:
+    app: medcat-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5173
