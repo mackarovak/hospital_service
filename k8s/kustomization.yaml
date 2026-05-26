@@ -1,0 +1,9 @@
+namespace: team-1-ns
+
+resources:
+  - secret.yaml
+  - configmap.yaml
+  - postgres.yaml
+  - backend.yaml
+  - frontend.yaml
+  - ingress.yaml

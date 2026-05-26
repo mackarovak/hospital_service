@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medcat-db
+  labels:
+    app: medcat-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: medcat-db
+  template:
+    metadata:
+      labels:
+        app: medcat-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: medcat-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medcat-db
+spec:
+  selector:
+    app: medcat-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
