@@ -1,7 +1,7 @@
 import pytest
 from django.db import IntegrityError
 
-from medical.models import Doctor, DoctorPatient, MedicalCard, Patient, User, UserRole
+from medical.models import Doctor, DoctorPatient, Patient, User, UserRole
 
 
 @pytest.mark.django_db
@@ -32,7 +32,9 @@ def test_medical_card_number_is_unique():
     first_patient = Patient.objects.create(user=first_user, first_name="Anna", last_name="Ivanova")
     second_patient = Patient.objects.create(user=second_user, first_name="Maria", last_name="Sidorova")
 
-    MedicalCard.objects.create(patient=first_patient, card_number="CARD-1")
+    first_patient.medical_card.card_number = "CARD-1"
+    first_patient.medical_card.save(update_fields=["card_number"])
 
     with pytest.raises(IntegrityError):
-        MedicalCard.objects.create(patient=second_patient, card_number="CARD-1")
+        second_patient.medical_card.card_number = "CARD-1"
+        second_patient.medical_card.save(update_fields=["card_number"])
