@@ -2,11 +2,12 @@ import json
 from datetime import date
 
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
 from medical.deps import role_required
-from medical.models import MedicalRecord, Patient, UserRole
+from medical.models import AppointmentSlot, MedicalRecord, Patient, UserRole
 
 
 PROFILE_FIELDS = {
@@ -57,13 +58,33 @@ def _doctor_full_name(record: MedicalRecord) -> str:
 def _record_payload(record: MedicalRecord) -> dict:
     return {
         "id": str(record.id),
-        "doctor_id": str(record.doctor_id),
         "record_date": record.record_date.isoformat(),
         "doctor_full_name": _doctor_full_name(record),
         "complaints": record.complaints,
         "examination_result": record.examination_result,
         "diagnosis_text": record.diagnosis_text,
         "treatment_text": record.treatment_text,
+    }
+
+
+def _slot_doctor_payload(slot: AppointmentSlot) -> dict:
+    doctor = slot.doctor
+    parts = [doctor.last_name, doctor.first_name, doctor.middle_name]
+    full_name = " ".join(p for p in parts if p)
+    return {
+        "id": str(doctor.id),
+        "full_name": full_name,
+        "office_number": doctor.office_number,
+        "specialization_name": doctor.specialization.name if doctor.specialization else None,
+    }
+
+
+def _appointment_payload(slot: AppointmentSlot) -> dict:
+    return {
+        "id": str(slot.id),
+        "starts_at": slot.starts_at.isoformat(),
+        "ends_at": slot.ends_at.isoformat(),
+        "doctor": _slot_doctor_payload(slot),
     }
 
 
@@ -136,3 +157,65 @@ def update_profile(request):
     patient.save(update_fields=[*allowed_payload.keys(), "updated_at"] if allowed_payload else ["updated_at"])
 
     return JsonResponse({"patient": _patient_payload(patient)})
+
+
+@require_GET
+@role_required(UserRole.PATIENT)
+def doctor_slots(request, doctor_id):
+    slots = (
+        AppointmentSlot.objects
+        .filter(doctor_id=doctor_id, patient__isnull=True, starts_at__gt=timezone.now())
+        .order_by("starts_at")
+    )
+    return JsonResponse(
+        [{"id": str(s.id), "starts_at": s.starts_at.isoformat(), "ends_at": s.ends_at.isoformat()} for s in slots],
+        safe=False,
+    )
+
+
+@csrf_exempt
+@role_required(UserRole.PATIENT)
+def book_slot(request, slot_id):
+    patient = Patient.objects.get(user=request.current_user)
+
+    if request.method == "POST":
+        rows = AppointmentSlot.objects.filter(id=slot_id, patient__isnull=True).update(patient=patient)
+        if rows == 0:
+            return JsonResponse({"detail": "Slot is already booked or does not exist"}, status=409)
+
+        slot = (
+            AppointmentSlot.objects
+            .select_related("doctor__specialization")
+            .get(id=slot_id)
+        )
+        return JsonResponse(_appointment_payload(slot))
+
+    if request.method == "DELETE":
+        try:
+            slot = AppointmentSlot.objects.get(id=slot_id)
+        except AppointmentSlot.DoesNotExist:
+            return JsonResponse({"detail": "Slot not found"}, status=404)
+
+        if slot.patient_id != patient.id:
+            return JsonResponse({"detail": "This slot does not belong to you"}, status=403)
+
+        AppointmentSlot.objects.filter(id=slot_id).update(patient=None)
+        return JsonResponse({}, status=204)
+
+    return JsonResponse({"detail": "Method not allowed"}, status=405)
+
+
+@require_GET
+@role_required(UserRole.PATIENT)
+def my_appointments(request):
+    patient = Patient.objects.get(user=request.current_user)
+    slots = (
+        AppointmentSlot.objects
+        .select_related("doctor__specialization")
+        .filter(patient=patient)
+        .order_by("starts_at")
+    )
+    return JsonResponse(
+        [_appointment_payload(s) for s in slots],
+        safe=False,
+    )
