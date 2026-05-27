@@ -5,9 +5,7 @@ services:
     environment:
       POSTGRES_DB: medcat
       POSTGRES_USER: medcat
-      POSTGRES_PASSWORD: medcat_password
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medcat_password}
     volumes:
       - medcat_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,14 +22,14 @@ services:
       DATABASE_ENGINE: postgres
       POSTGRES_DB: medcat
       POSTGRES_USER: medcat
-      POSTGRES_PASSWORD: medcat_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medcat_password}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      DJANGO_DEBUG: "True"
-      DJANGO_SECRET_KEY: dev-only-compose-secret-key-change-before-deploying
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend
-      FRONTEND_URL: http://localhost:5173
-      JWT_SECRET: change_me
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-only-compose-secret-key-change-before-deploying}
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,${PUBLIC_HOST:-144.124.240.63}
+      FRONTEND_URL: http://${PUBLIC_HOST:-144.124.240.63}
+      JWT_SECRET: ${JWT_SECRET:-change_me}
       JWT_ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
     ports:
@@ -45,9 +43,9 @@ services:
       context: ./frontend
     container_name: medcat_frontend
     environment:
-      VITE_API_URL: http://localhost:8000/api/v1
+      VITE_API_URL: http://${PUBLIC_HOST:-144.124.240.63}:8000/api/v1
     ports:
-      - "5173:5173"
+      - "80:5173"
     depends_on:
       - backend
 
