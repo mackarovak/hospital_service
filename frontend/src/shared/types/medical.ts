@@ -73,3 +73,40 @@ export type DoctorMedicalCardResponse = {
   medical_card: MedicalCard;
   records: MedicalRecord[];
 };
+
+export type Specialization = {
+  id: string;
+  name: string;
+};
+
+export type DoctorPublic = {
+  id: string;
+  full_name: string;
+  office_number: string | null;
+  specialization_name: string;
+};
+
+export type FreeSlot = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+};
+
+export type Appointment = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  doctor: {
+    id: string;
+    full_name: string;
+    office_number: string | null;
+    specialization_name: string;
+  };
+};
+
+export type DoctorSlot = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  patient: { id: string; full_name: string } | null;
+};
