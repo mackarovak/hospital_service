@@ -28,6 +28,12 @@ export function Layout() {
                 <Link className="hover:text-slate-950" to="/patient/medical-card">
                   Моя медкарта
                 </Link>
+                <Link className="hover:text-slate-950" to="/patient/book">
+                  Записаться к врачу
+                </Link>
+                <Link className="hover:text-slate-950" to="/patient/appointments">
+                  Мои записи
+                </Link>
                 <Link className="hover:text-slate-950" to="/patient/profile">
                   Мои данные
                 </Link>
@@ -40,6 +46,9 @@ export function Layout() {
                 </Link>
                 <Link className="hover:text-slate-950" to="/doctor/patients">
                   Мои пациенты
+                </Link>
+                <Link className="hover:text-slate-950" to="/doctor/schedule">
+                  Расписание
                 </Link>
               </>
             )}
