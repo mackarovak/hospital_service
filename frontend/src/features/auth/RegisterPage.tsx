@@ -63,8 +63,9 @@ export function RegisterPage() {
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("user_role", data.user.role);
       navigate(data.user.role === "DOCTOR" ? "/doctor" : "/patient");
-    } catch {
-      setError("Не удалось зарегистрироваться. Проверьте данные.");
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(detail ?? "Не удалось зарегистрироваться. Проверьте данные.");
     }
   }
 
