@@ -153,7 +153,13 @@ kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml apply -k k8s
 kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns create job --from=cronjob/medcat-k6-read medcat-k6-read-manual
 ```
 
-Логи этих запусков видны в Grafana в панели `k6 Scheduled Load Test Logs`.
+Логи и графики этих запусков видны в Grafana в dashboard `MedCat Load Tests`.
+
+Статус Kubernetes CronJob и связанных Jobs виден в dashboard `MedCat Kubernetes Jobs`:
+
+```text
+http://grafana-medcat-team1.213-165-209-28.nip.io/d/medcat-kubernetes-jobs/medcat-kubernetes-jobs
+```
 
 ### Grafana и Loki в Kubernetes
 
