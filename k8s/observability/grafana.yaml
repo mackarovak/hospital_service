@@ -1,0 +1,197 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+data:
+  loki.yml: |
+    apiVersion: 1
+
+    datasources:
+      - name: Loki
+        uid: Loki
+        type: loki
+        access: proxy
+        url: http://loki:3100
+        isDefault: true
+        editable: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provider
+data:
+  dashboards.yml: |
+    apiVersion: 1
+
+    providers:
+      - name: MedCat
+        orgId: 1
+        folder: MedCat
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-medcat-dashboard
+data:
+  medcat-logs.json: |
+    {
+      "editable": true,
+      "panels": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+          "id": 1,
+          "options": {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-(backend|frontend).*\"}",
+              "refId": "A"
+            }
+          ],
+          "title": "Application Logs",
+          "type": "logs"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 2,
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "sum by (status) (count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-backend.*\"} |= \"request method=\" | regexp \"status=(?P<status>[0-9]+)\" [$__auto]))",
+              "refId": "A"
+            }
+          ],
+          "title": "Backend Requests By Status",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 3,
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "quantile_over_time(0.95, {namespace=\"team-1-ns\", filename=~\".*medcat-backend.*\"} |= \"request method=\" | regexp \"duration_ms=(?P<duration_ms>[0-9]+)\" | unwrap duration_ms [$__auto])",
+              "refId": "A"
+            }
+          ],
+          "title": "Backend P95 Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+          "id": 4,
+          "options": {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6.*\"}",
+              "refId": "A"
+            }
+          ],
+          "title": "k6 Scheduled Load Test Logs",
+          "type": "logs"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["medcat", "loki"],
+      "time": {"from": "now-15m", "to": "now"},
+      "timezone": "browser",
+      "title": "MedCat Logs",
+      "uid": "medcat-logs",
+      "version": 1
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.4.12
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: admin
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: medcat-team1-grafana
+            - name: GF_USERS_DEFAULT_THEME
+              value: light
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 384Mi
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboard-provider
+          configMap:
+            name: grafana-dashboard-provider
+        - name: dashboards
+          configMap:
+            name: grafana-medcat-dashboard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

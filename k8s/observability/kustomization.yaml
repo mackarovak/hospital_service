@@ -1,0 +1,7 @@
+namespace: team-1-ns
+
+resources:
+  - loki.yaml
+  - grafana.yaml
+  - grafana-ingress.yaml
+  - promtail.yaml
