@@ -13,6 +13,10 @@ jobs:
   backend-tests:
     name: Backend tests
     runs-on: ubuntu-latest
+    env:
+      DJANGO_DEBUG: "True"
+      DJANGO_SECRET_KEY: ci-only-django-secret-key
+      JWT_SECRET: ci-only-jwt-secret
     defaults:
       run:
         working-directory: backend
