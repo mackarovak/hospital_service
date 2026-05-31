@@ -70,18 +70,22 @@ export function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <Card className="w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-slate-950">Регистрация</h1>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <Card className="w-full max-w-2xl overflow-hidden p-0">
+        <div className="border-b border-slate-200 bg-slate-50 px-7 py-6">
+          <p className="text-sm font-medium text-sky-700">MedCat</p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Регистрация</h1>
+          <p className="mt-1 text-sm text-slate-500">Создайте профиль пациента или врача.</p>
+        </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="mx-7 mt-6 grid gap-2 rounded-md border border-slate-200 bg-white p-1 sm:grid-cols-2">
           <button
             type="button"
             onClick={() => setRole("PATIENT")}
-            className={`flex-1 rounded-md border py-2 text-sm font-medium transition ${
+            className={`rounded px-4 py-2.5 text-sm font-semibold transition ${
               role === "PATIENT"
-                ? "border-sky-700 bg-sky-700 text-white"
-                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                ? "bg-sky-700 text-white shadow-sm"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
             }`}
           >
             Пациент
@@ -89,17 +93,17 @@ export function RegisterPage() {
           <button
             type="button"
             onClick={() => setRole("DOCTOR")}
-            className={`flex-1 rounded-md border py-2 text-sm font-medium transition ${
+            className={`rounded px-4 py-2.5 text-sm font-semibold transition ${
               role === "DOCTOR"
-                ? "border-sky-700 bg-sky-700 text-white"
-                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                ? "bg-sky-700 text-white shadow-sm"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
             }`}
           >
             Врач
           </button>
         </div>
 
-        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+        <form className="grid gap-4 px-7 py-6 sm:grid-cols-2" onSubmit={handleSubmit}>
           <Input
             label="Логин"
             name="login"
@@ -141,7 +145,7 @@ export function RegisterPage() {
                   value={form.specialization_id}
                   onChange={(e) => handleChange("specialization_id", e.target.value)}
                   required
-                  className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
+                  className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                 >
                   <option value="">— выберите —</option>
                   {specializations.map((s) => (
@@ -160,14 +164,18 @@ export function RegisterPage() {
             </>
           )}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 sm:col-span-2">
+              {error}
+            </p>
+          )}
 
-          <Button className="w-full" type="submit">
+          <Button className="w-full sm:col-span-2" type="submit">
             Зарегистрироваться
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-slate-500">
+        <p className="border-t border-slate-200 px-7 py-5 text-center text-sm text-slate-500">
           Уже есть аккаунт?{" "}
           <Link to="/login" className="text-sky-700 hover:underline">
             Войти

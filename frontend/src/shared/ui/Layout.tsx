@@ -13,52 +13,55 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link className="text-base font-semibold text-slate-950" to="/">
-            MedCat
+    <div className="min-h-screen bg-slate-50">
+      <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+          <Link className="flex items-center gap-2 text-base font-semibold text-slate-950" to="/">
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-sky-700 text-sm font-bold text-white">
+              M
+            </span>
+            <span>MedCat</span>
           </Link>
-          <nav className="flex items-center gap-4 text-sm text-slate-600">
+          <nav className="flex flex-wrap items-center justify-end gap-2 text-sm text-slate-600">
             {role === "PATIENT" && (
               <>
-                <Link className="hover:text-slate-950" to="/patient">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient">
                   Главная
                 </Link>
-                <Link className="hover:text-slate-950" to="/patient/medical-card">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/medical-card">
                   Моя медкарта
                 </Link>
-                <Link className="hover:text-slate-950" to="/patient/book">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/book">
                   Записаться к врачу
                 </Link>
-                <Link className="hover:text-slate-950" to="/patient/appointments">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/appointments">
                   Мои записи
                 </Link>
-                <Link className="hover:text-slate-950" to="/patient/profile">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/profile">
                   Мои данные
                 </Link>
               </>
             )}
             {role === "DOCTOR" && (
               <>
-                <Link className="hover:text-slate-950" to="/doctor">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/doctor">
                   Главная
                 </Link>
-                <Link className="hover:text-slate-950" to="/doctor/patients">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/doctor/patients">
                   Мои пациенты
                 </Link>
-                <Link className="hover:text-slate-950" to="/doctor/schedule">
+                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/doctor/schedule">
                   Расписание
                 </Link>
               </>
             )}
-            <button className="hover:text-slate-950" onClick={handleLogout}>
+            <button className="rounded-md px-3 py-2 text-slate-500 hover:bg-slate-100 hover:text-slate-950" onClick={handleLogout}>
               Выйти
             </button>
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-7">
         <Outlet />
       </main>
     </div>

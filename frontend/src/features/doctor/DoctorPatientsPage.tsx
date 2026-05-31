@@ -53,23 +53,41 @@ export function DoctorPatientsPage() {
 
   return (
     <div className="space-y-5">
-      <Card>
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-950">Мои пациенты</h1>
-            <p className="mt-1 text-sm text-slate-500">Всего пациентов: {data?.total ?? 0}</p>
-          </div>
-          <div className="w-full md:max-w-sm">
-            <Input
-              label="Поиск"
-              name="query"
-              placeholder="ФИО или номер карты"
-              value={query}
-              onChange={(event) => handleQueryChange(event.target.value)}
-            />
+      <Card className="overflow-hidden p-0">
+        <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
+          <p className="text-sm font-medium text-sky-700">Пациенты</p>
+          <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-950">Мои пациенты</h1>
+              <p className="mt-1 text-sm text-slate-500">Всего пациентов: {data?.total ?? 0}</p>
+            </div>
+            <div className="w-full md:max-w-sm">
+              <Input
+                label="Поиск"
+                name="query"
+                placeholder="ФИО или номер карты"
+                value={query}
+                onChange={(event) => handleQueryChange(event.target.value)}
+              />
+            </div>
           </div>
         </div>
       </Card>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card>
+          <p className="text-xs font-medium uppercase text-slate-400">Найдено</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-950">{data?.total ?? 0}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-medium uppercase text-slate-400">Страница</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-950">{page}/{totalPages}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-medium uppercase text-slate-400">Лимит</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-950">{PAGE_LIMIT}</p>
+        </Card>
+      </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -101,13 +119,20 @@ export function DoctorPatientsPage() {
               )}
               {!loading &&
                 data?.items.map((patient) => (
-                  <tr key={patient.id}>
-                    <td className="px-5 py-4 font-medium text-slate-950">{patient.full_name || "—"}</td>
+                  <tr key={patient.id} className="transition hover:bg-slate-50">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-sky-100 text-xs font-semibold text-sky-800">
+                          {(patient.full_name || "П").split(" ").slice(0, 2).map((part) => part[0]).join("").toUpperCase()}
+                        </span>
+                        <span className="font-medium text-slate-950">{patient.full_name || "—"}</span>
+                      </div>
+                    </td>
                     <td className="px-5 py-4 text-slate-600">{patient.date_of_birth || "—"}</td>
                     <td className="px-5 py-4 text-slate-600">{patient.card_number}</td>
                     <td className="px-5 py-4 text-right">
                       <Link
-                        className="inline-flex h-9 items-center justify-center rounded-md bg-sky-700 px-3 text-sm font-medium text-white transition hover:bg-sky-800"
+                        className="inline-flex min-h-9 items-center justify-center rounded-md bg-sky-700 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800"
                         to={`/doctor/patients/${patient.id}/medical-card`}
                       >
                         Открыть медкарту
