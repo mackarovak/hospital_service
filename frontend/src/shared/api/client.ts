@@ -1,7 +1,14 @@
 import axios from "axios";
 
 import type { LoginResponse } from "../types/auth";
-import type { Appointment, DoctorPublic, DoctorSlot, FreeSlot, Specialization } from "../types/medical";
+import type {
+  Appointment,
+  DoctorPublic,
+  DoctorSlot,
+  FreeSlot,
+  Specialization,
+  TriageRecommendation,
+} from "../types/medical";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1",
@@ -57,6 +64,9 @@ export const cancelBooking = (slotId: string) =>
   api.delete(`/patient/slots/${slotId}/book`);
 
 export const getMyAppointments = () => api.get<Appointment[]>("/patient/appointments");
+
+export const analyzePatientSymptoms = (data: { symptoms?: string[]; comment?: string }) =>
+  api.post<TriageRecommendation>("/patient/triage", data);
 
 // Врач — управление слотами
 export const getDoctorSlots = (params?: { from?: string; to?: string }) =>

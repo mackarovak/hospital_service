@@ -56,6 +56,7 @@ urlpatterns = [
         name="patient-book-slot",
     ),
     path("api/v1/patient/appointments", patient_views.my_appointments, name="patient-appointments"),
+    path("api/v1/patient/triage", patient_views.triage, name="patient-triage"),
 
     # Doctor endpoints
     path("api/v1/doctor/patients", doctor_views.patients, name="doctor-patients"),

@@ -7,7 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
 from medical.deps import role_required
-from medical.models import AppointmentSlot, MedicalRecord, Patient, UserRole
+from medical.models import AppointmentSlot, Doctor, MedicalRecord, Patient, Specialization, UserRole
+from medical.triage_service import analyze_symptoms
 
 
 PROFILE_FIELDS = {
@@ -218,4 +219,50 @@ def my_appointments(request):
     return JsonResponse(
         [_appointment_payload(s) for s in slots],
         safe=False,
+    )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@role_required(UserRole.PATIENT)
+def triage(request):
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"detail": "Invalid JSON"}, status=400)
+
+    symptoms = payload.get("symptoms", [])
+    comment = payload.get("comment", "")
+
+    if isinstance(symptoms, str):
+        symptoms = [symptoms]
+    if not isinstance(symptoms, list) or not all(isinstance(item, str) for item in symptoms):
+        return JsonResponse({"errors": {"symptoms": "Must be a list of strings"}}, status=400)
+    if not isinstance(comment, str):
+        return JsonResponse({"errors": {"comment": "Must be a string"}}, status=400)
+
+    symptoms = [item.strip() for item in symptoms if item.strip()]
+    comment = comment.strip()
+    if not symptoms and not comment:
+        return JsonResponse({"errors": {"symptoms": "Describe at least one symptom"}}, status=400)
+
+    recommendation = analyze_symptoms(symptoms=symptoms, comment=comment)
+    specialization = Specialization.objects.filter(
+        name__iexact=recommendation["recommended_specialization"],
+    ).first()
+
+    return JsonResponse(
+        {
+            **recommendation,
+            "specialization": (
+                {"id": str(specialization.id), "name": specialization.name}
+                if specialization
+                else None
+            ),
+            "available_doctors_count": (
+                Doctor.objects.filter(specialization=specialization).count()
+                if specialization
+                else 0
+            ),
+        }
     )
