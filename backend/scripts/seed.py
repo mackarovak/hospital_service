@@ -29,9 +29,22 @@ def _upsert_user(login, role):
 
 def seed():
     therapist_spec, _ = Specialization.objects.get_or_create(name="Терапевт")
-    Specialization.objects.get_or_create(name="Хирург")
-    Specialization.objects.get_or_create(name="Кардиолог")
-    Specialization.objects.get_or_create(name="Дерматолог")
+    for specialization_name in [
+        "Хирург",
+        "Кардиолог",
+        "Дерматолог",
+        "Гастроэнтеролог",
+        "Невролог",
+        "ЛОР",
+        "Офтальмолог",
+        "Стоматолог",
+        "Ортопед",
+        "Уролог",
+        "Гинеколог",
+        "Эндокринолог",
+        "Педиатр",
+    ]:
+        Specialization.objects.get_or_create(name=specialization_name)
 
     patient_user = _upsert_user("patient1", UserRole.PATIENT)
     doctor_user = _upsert_user("doctor1", UserRole.DOCTOR)

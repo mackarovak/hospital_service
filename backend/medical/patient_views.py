@@ -246,7 +246,14 @@ def triage(request):
     if not symptoms and not comment:
         return JsonResponse({"errors": {"symptoms": "Describe at least one symptom"}}, status=400)
 
-    recommendation = analyze_symptoms(symptoms=symptoms, comment=comment)
+    available_specializations = list(
+        Specialization.objects.order_by("name").values_list("name", flat=True),
+    )
+    recommendation = analyze_symptoms(
+        symptoms=symptoms,
+        comment=comment,
+        available_specializations=available_specializations,
+    )
     specialization = Specialization.objects.filter(
         name__iexact=recommendation["recommended_specialization"],
     ).first()

@@ -15,3 +15,21 @@ def test_analyze_symptoms_falls_back_to_therapist():
     assert result["urgency"] == "LOW"
     assert result["recommended_specialization"] == "Терапевт"
     assert result["matched_symptoms"] == []
+
+
+def test_analyze_symptoms_recommends_gastroenterologist():
+    result = analyze_symptoms(comment="Тошнота, изжога и болит желудок")
+
+    assert result["urgency"] == "MEDIUM"
+    assert result["recommended_specialization"] == "Гастроэнтеролог"
+    assert "тошнота" in result["matched_symptoms"]
+
+
+def test_analyze_symptoms_respects_available_specializations():
+    result = analyze_symptoms(
+        comment="Сыпь и зуд",
+        available_specializations=["Терапевт", "Кардиолог"],
+    )
+
+    assert result["recommended_specialization"] == "Терапевт"
+    assert result["matched_symptoms"] == []
