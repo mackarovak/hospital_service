@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { api } from "../../shared/api/client";
 import type { LoginResponse } from "../../shared/types/auth";
@@ -49,6 +49,12 @@ export function LoginPage() {
             Войти
           </Button>
         </form>
+        <p className="mt-4 text-center text-sm text-slate-500">
+          Нет аккаунта?{" "}
+          <Link to="/register" className="text-sky-700 hover:underline">
+            Зарегистрироваться
+          </Link>
+        </p>
       </Card>
     </main>
   );

@@ -2,7 +2,7 @@ import httpx
 import pytest
 from django.core.wsgi import get_wsgi_application
 
-from medical.models import Doctor, DoctorPatient, Patient, User, UserRole
+from medical.models import Doctor, DoctorPatient, Patient, Specialization, User, UserRole
 
 
 def _make_user(login, role):
@@ -35,11 +35,12 @@ def mvp_context(db):
         first_name="Anna",
         last_name="Sidorova",
     )
+    spec, _ = Specialization.objects.get_or_create(name="Therapist")
     doctor = Doctor.objects.create(
         user=doctor_user,
         first_name="Petr",
         last_name="Petrov",
-        specialization="Therapist",
+        specialization=spec,
     )
 
     patient.medical_card.card_number = "MC-0001"

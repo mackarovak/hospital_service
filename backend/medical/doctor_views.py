@@ -1,13 +1,15 @@
 import json
+from datetime import datetime
 from typing import Optional
 
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from medical.deps import role_required
-from medical.models import Doctor, DoctorPatient, MedicalRecord, Patient, UserRole
+from medical.models import AppointmentSlot, Doctor, DoctorPatient, MedicalRecord, Patient, UserRole
 from medical.patient_views import _record_payload
 
 
@@ -38,7 +40,7 @@ def _doctor_payload(doctor: Doctor) -> dict:
     return {
         "id": str(doctor.id),
         "full_name": " ".join(part for part in parts if part),
-        "specialization": doctor.specialization,
+        "specialization": doctor.specialization.name if doctor.specialization else None,
         "office_number": doctor.office_number,
     }
 
@@ -78,7 +80,7 @@ def _record_response(record: MedicalRecord) -> dict:
 
 
 def _get_current_doctor(request) -> Doctor:
-    return Doctor.objects.get(user=request.current_user)
+    return Doctor.objects.select_related("specialization").get(user=request.current_user)
 
 
 def _get_linked_patient_or_error(doctor: Doctor, patient_id: str):
@@ -214,3 +216,88 @@ def update_medical_record(request, record_id):
         record.save(update_fields=[*update_fields, "updated_at"])
 
     return JsonResponse(_record_response(record))
+
+
+def _slot_payload(slot: AppointmentSlot) -> dict:
+    patient_data = None
+    if slot.patient_id:
+        p = slot.patient
+        parts = [p.last_name, p.first_name, p.middle_name]
+        patient_data = {"id": str(p.id), "full_name": " ".join(x for x in parts if x)}
+    return {
+        "id": str(slot.id),
+        "starts_at": slot.starts_at.isoformat(),
+        "ends_at": slot.ends_at.isoformat(),
+        "patient": patient_data,
+    }
+
+
+@csrf_exempt
+@role_required(UserRole.DOCTOR)
+def manage_slots(request):
+    doctor = _get_current_doctor(request)
+
+    if request.method == "GET":
+        qs = AppointmentSlot.objects.select_related("patient").filter(doctor=doctor)
+        from_date = request.GET.get("from")
+        to_date = request.GET.get("to")
+        if from_date:
+            qs = qs.filter(starts_at__date__gte=from_date)
+        if to_date:
+            qs = qs.filter(starts_at__date__lte=to_date)
+        return JsonResponse([_slot_payload(s) for s in qs], safe=False)
+
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body or "{}")
+        except json.JSONDecodeError:
+            return JsonResponse({"detail": "Invalid JSON"}, status=400)
+
+        starts_raw = payload.get("starts_at", "")
+        ends_raw = payload.get("ends_at", "")
+        if not starts_raw or not ends_raw:
+            return JsonResponse({"detail": "starts_at and ends_at are required"}, status=400)
+
+        try:
+            starts_at = datetime.fromisoformat(starts_raw)
+            ends_at = datetime.fromisoformat(ends_raw)
+        except ValueError:
+            return JsonResponse({"detail": "Invalid datetime format, use ISO 8601"}, status=400)
+
+        if timezone.is_naive(starts_at):
+            starts_at = timezone.make_aware(starts_at)
+        if timezone.is_naive(ends_at):
+            ends_at = timezone.make_aware(ends_at)
+
+        if starts_at >= ends_at:
+            return JsonResponse({"detail": "starts_at must be before ends_at"}, status=400)
+        if starts_at <= timezone.now():
+            return JsonResponse({"detail": "starts_at must be in the future"}, status=400)
+
+        slot = AppointmentSlot.objects.create(doctor=doctor, starts_at=starts_at, ends_at=ends_at)
+        return JsonResponse(_slot_payload(slot), status=201)
+
+    return JsonResponse({"detail": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@role_required(UserRole.DOCTOR)
+def delete_slot(request, slot_id):
+    if request.method != "DELETE":
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
+
+    doctor = _get_current_doctor(request)
+
+    try:
+        slot = AppointmentSlot.objects.get(id=slot_id)
+    except AppointmentSlot.DoesNotExist:
+        return JsonResponse({"detail": "Slot not found"}, status=404)
+
+    if slot.doctor_id != doctor.id:
+        return JsonResponse({"detail": "This slot does not belong to you"}, status=403)
+
+    if slot.patient_id is not None:
+        return JsonResponse({"detail": "Cannot delete a booked slot"}, status=409)
+
+    slot.delete()
+    return JsonResponse({}, status=204)

@@ -41,6 +41,19 @@ class BloodType(models.TextChoices):
     UNKNOWN = "UNKNOWN", "Не определена"
 
 
+class Specialization(TimestampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Специализация"
+        verbose_name_plural = "Специализации"
+        db_table = "specializations"
+
+    def __str__(self):
+        return self.name
+
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -53,6 +66,8 @@ class UserManager(BaseUserManager):
     def create_superuser(self, login, password=None, **extra_fields):
         extra_fields.setdefault("role", UserRole.DOCTOR)
         extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
         role = extra_fields.pop("role")
         return self.create_user(login, role, password, **extra_fields)
 
@@ -62,6 +77,8 @@ class User(AbstractBaseUser, TimestampedModel):
     login = models.CharField(max_length=100, unique=True)
     role = models.CharField(max_length=20, choices=UserRole.choices)
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
     objects = UserManager()
 
@@ -74,10 +91,6 @@ class User(AbstractBaseUser, TimestampedModel):
     def __str__(self):
         return self.login
 
-    @property
-    def is_staff(self):
-        return False
-
     def set_password(self, raw_password):
         from medical.security import hash_password
         self.password = hash_password(raw_password) if raw_password else "!"
@@ -88,6 +101,12 @@ class User(AbstractBaseUser, TimestampedModel):
             return verify_password(raw_password, self.password)
         except Exception:
             return False
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
 
     def save(self, *args, **kwargs):
         if not self.password:
@@ -122,7 +141,13 @@ class Doctor(TimestampedModel):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
-    specialization = models.CharField(max_length=100, blank=True, null=True)
+    specialization = models.ForeignKey(
+        "Specialization",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="doctors",
+    )
     office_number = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
@@ -184,3 +209,24 @@ class MedicalRecord(TimestampedModel):
 
     def __str__(self):
         return f"{self.medical_card_id} / {self.record_date:%Y-%m-%d}"
+
+
+class AppointmentSlot(TimestampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="slots")
+    starts_at = models.DateTimeField()
+    ends_at = models.DateTimeField()
+    patient = models.ForeignKey(
+        Patient,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="appointments",
+    )
+
+    class Meta:
+        db_table = "appointment_slots"
+        ordering = ["starts_at"]
+
+    def __str__(self):
+        return f"{self.doctor} / {self.starts_at:%Y-%m-%d %H:%M}"
