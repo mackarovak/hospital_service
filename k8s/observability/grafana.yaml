@@ -111,7 +111,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6.*\"}",
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"}",
               "refId": "A"
             }
           ],
@@ -155,13 +155,13 @@ data:
             "graphMode": "none",
             "justifyMode": "center",
             "orientation": "auto",
-            "reduceOptions": {"calcs": ["sum"], "fields": "", "values": false},
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
             "textMode": "auto"
           },
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "sum(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6.*\"} |= \"default ✓\" [$__range]))",
+              "expr": "sum(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"default ✓ [ 100% ]\" [$__range]))",
               "refId": "A"
             }
           ],
@@ -191,13 +191,13 @@ data:
             "graphMode": "none",
             "justifyMode": "center",
             "orientation": "auto",
-            "reduceOptions": {"calcs": ["sum"], "fields": "", "values": false},
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
             "textMode": "auto"
           },
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "sum(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6.*\"} |~ \"level=error|thresholds .* crossed| ✗ \" [$__range]))",
+              "expr": "sum(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"level=error|thresholds on metrics\" [$__range]))",
               "refId": "A"
             }
           ],
@@ -234,7 +234,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6.*\"} |= \"http_req_duration\" | regexp \"p\\\\(95\\\\)=(?P<p95>[0-9.]+)s\" | unwrap p95",
+              "expr": "max(max_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"http_req_duration\" | regexp \"p\\\\(95\\\\)=(?P<p95>[0-9.]+)s\" | unwrap p95 [$__range]))",
               "refId": "A"
             }
           ],
@@ -317,7 +317,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6.*\"} |= \"http_req_duration\" | regexp \"p\\\\(95\\\\)=(?P<p95>[0-9.]+)s\" | unwrap p95",
+              "expr": "max_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"http_req_duration\" | regexp \"p\\\\(95\\\\)=(?P<p95>[0-9.]+)s\" | unwrap p95 [$__auto])",
               "refId": "A"
             }
           ],
@@ -338,7 +338,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6.*\"} |~ \"checks|http_req_duration|http_req_failed|http_reqs|default ✓|level=error\"",
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"checks|http_req_duration|http_req_failed|http_reqs|default ✓|level=error\"",
               "refId": "A"
             }
           ],
@@ -565,19 +565,19 @@ data:
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "sum(kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read.*\"})",
+              "expr": "sum(kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
               "legendFormat": "succeeded",
               "refId": "A"
             },
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "sum(kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read.*\"})",
+              "expr": "sum(kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
               "legendFormat": "failed",
               "refId": "B"
             },
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "sum(kube_job_status_active{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read.*\"})",
+              "expr": "sum(kube_job_status_active{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
               "legendFormat": "active",
               "refId": "C"
             }
@@ -603,13 +603,13 @@ data:
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read.*\"}",
+              "expr": "kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"}",
               "legendFormat": "{{job_name}} succeeded",
               "refId": "A"
             },
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read.*\"}",
+              "expr": "kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"}",
               "legendFormat": "{{job_name}} failed",
               "refId": "B"
             }
@@ -647,7 +647,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "sum(kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read.*\"})",
+              "expr": "sum(kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
               "instant": true,
               "refId": "A"
             }
@@ -683,7 +683,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "sum(kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read.*\"})",
+              "expr": "sum(kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
               "instant": true,
               "refId": "A"
             }
