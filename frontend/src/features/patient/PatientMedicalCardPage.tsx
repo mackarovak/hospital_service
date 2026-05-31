@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { api } from "../../shared/api/client";
 import type { MedicalRecord, PatientMedicalCardResponse } from "../../shared/types/medical";
+import { Button } from "../../shared/ui/Button";
 import { Card } from "../../shared/ui/Card";
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
@@ -53,8 +55,21 @@ export function PatientMedicalCardPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <h1 className="text-xl font-semibold text-slate-950">Данные пациента</h1>
+      <Card className="overflow-hidden p-0">
+        <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-sky-700">Медицинская карта</p>
+              <h1 className="mt-1 text-2xl font-semibold text-slate-950">{fullName}</h1>
+              <p className="mt-1 text-sm text-slate-500">Карта {card.card_number}</p>
+            </div>
+            <Link to="/patient/medical-card/print" target="_blank" rel="noreferrer">
+              <Button>Скачать выписку</Button>
+            </Link>
+          </div>
+        </div>
+        <div className="p-6">
+        <h2 className="text-lg font-semibold text-slate-950">Данные пациента</h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="ФИО" value={fullName} />
           <Field label="Дата рождения" value={p.date_of_birth} />
@@ -64,6 +79,7 @@ export function PatientMedicalCardPage() {
           <Field label="Группа крови" value={p.blood_type} />
           <Field label="Аллергии" value={p.allergies} />
           <Field label="Хронические заболевания" value={p.chronic_conditions} />
+        </div>
         </div>
       </Card>
 
