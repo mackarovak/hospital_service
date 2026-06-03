@@ -161,11 +161,11 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "sum(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"default ✓ [ 100% ]\" [$__range]))",
+              "expr": "count(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"default ✓ [ 100% ]\" [$__range]) > 0) or vector(0)",
               "refId": "A"
             }
           ],
-          "title": "Successful k6 Runs",
+          "title": "Successful k6 Runs in Range",
           "type": "stat"
         },
         {
@@ -197,7 +197,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "sum(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"level=error|thresholds on metrics\" [$__range]))",
+              "expr": "count(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"level=error|thresholds on metrics\" [$__range]) > 0) or vector(0)",
               "refId": "A"
             }
           ],

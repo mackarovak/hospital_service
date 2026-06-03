@@ -51,3 +51,10 @@ HTTP 5xx logs:
 {namespace="team-1-ns", filename=~".*medcat-backend.*"} |= " 5"
 ```
 
+k6 runs in the selected Grafana time range:
+
+```logql
+count(count_over_time({namespace="team-1-ns", filename=~".*medcat-k6-read-[0-9].*"} |= "default ✓ [ 100% ]" [$__range]) > 0) or vector(0)
+```
+
+The scheduled Kubernetes load test runs every two hours (`0 */2 * * *`), so a `Last 6 hours` dashboard range normally includes up to three successful runs.
