@@ -79,6 +79,16 @@ export type Specialization = {
   name: string;
 };
 
+export type TriageRecommendation = {
+  urgency: "LOW" | "MEDIUM" | "HIGH";
+  recommended_specialization: string;
+  reason: string;
+  matched_symptoms: string[];
+  urgent_hint: string;
+  specialization: Specialization | null;
+  available_doctors_count: number;
+};
+
 export type DoctorPublic = {
   id: string;
   full_name: string;

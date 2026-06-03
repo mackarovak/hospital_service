@@ -1,0 +1,13 @@
+namespace: team-1-ns
+
+configMapGenerator:
+  - name: medcat-k6-scripts
+    files:
+      - medcat-read.js=scripts/medcat-read.js
+      - medcat.js=scripts/medcat.js
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+  - cronjob.yaml

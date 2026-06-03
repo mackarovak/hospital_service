@@ -1,0 +1,9 @@
+namespace: team-1-ns
+
+resources:
+  - loki.yaml
+  - prometheus.yaml
+  - kube-state-metrics.yaml
+  - grafana.yaml
+  - grafana-ingress.yaml
+  - promtail.yaml

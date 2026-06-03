@@ -2,12 +2,19 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
+  analyzePatientSymptoms,
   bookSlot,
   getDoctorFreeSlots,
   getDoctorsBySpecialization,
   getSpecializations,
 } from "../../shared/api/client";
-import type { Appointment, DoctorPublic, FreeSlot, Specialization } from "../../shared/types/medical";
+import type {
+  Appointment,
+  DoctorPublic,
+  FreeSlot,
+  Specialization,
+  TriageRecommendation,
+} from "../../shared/types/medical";
 import { Button } from "../../shared/ui/Button";
 import { Card } from "../../shared/ui/Card";
 
@@ -33,6 +40,10 @@ export function PatientBookingPage() {
   const [specializations, setSpecializations] = useState<Specialization[]>([]);
   const [doctors, setDoctors] = useState<DoctorPublic[]>([]);
   const [slots, setSlots] = useState<FreeSlot[]>([]);
+  const [symptomText, setSymptomText] = useState("");
+  const [triage, setTriage] = useState<TriageRecommendation | null>(null);
+  const [triageLoading, setTriageLoading] = useState(false);
+  const [triageError, setTriageError] = useState("");
   const [selectedSpec, setSelectedSpec] = useState<Specialization | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorPublic | null>(null);
   const [booked, setBooked] = useState<Appointment | null>(null);
@@ -54,6 +65,37 @@ export function PatientBookingPage() {
       setLoading(false);
     }
   }
+
+  async function handleTriage() {
+    const comment = symptomText.trim();
+    if (!comment) {
+      setTriageError("Опишите симптомы.");
+      return;
+    }
+
+    setTriageError("");
+    setTriage(null);
+    setTriageLoading(true);
+    try {
+      const { data } = await analyzePatientSymptoms({ comment });
+      setTriage(data);
+    } catch {
+      setTriageError("Не удалось подобрать специальность. Попробуйте снова.");
+    } finally {
+      setTriageLoading(false);
+    }
+  }
+
+  async function selectRecommendedSpecialization() {
+    if (!triage?.specialization) return;
+    await selectSpecialization(triage.specialization);
+  }
+
+  const urgencyLabel = {
+    LOW: "Планово",
+    MEDIUM: "Средняя срочность",
+    HIGH: "Срочно",
+  } as const;
 
   async function selectDoctor(doctor: DoctorPublic) {
     setSelectedDoctor(doctor);
@@ -123,7 +165,56 @@ export function PatientBookingPage() {
       </div>
 
       {step === 1 && (
-        <div className="space-y-2">
+        <div className="space-y-4">
+          <Card className="space-y-3">
+            <div>
+              <h2 className="text-base font-semibold text-slate-950">Подбор по симптомам</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Напишите, что беспокоит, и система предложит специальность.
+              </p>
+            </div>
+            <textarea
+              value={symptomText}
+              onChange={(e) => setSymptomText(e.target.value)}
+              rows={4}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+              placeholder="Например: температура, кашель и болит горло"
+            />
+            {triageError && <p className="text-sm text-red-600">{triageError}</p>}
+            <Button onClick={handleTriage} disabled={triageLoading}>
+              {triageLoading ? "Анализ..." : "Подобрать специальность"}
+            </Button>
+
+            {triage && (
+              <div className="rounded-md border border-sky-100 bg-sky-50 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded bg-white px-2 py-1 text-xs font-medium text-sky-800">
+                    {urgencyLabel[triage.urgency]}
+                  </span>
+                  <span className="text-sm font-semibold text-slate-950">
+                    {triage.recommended_specialization}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-slate-700">{triage.reason}</p>
+                {triage.matched_symptoms.length > 0 && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Совпадения: {triage.matched_symptoms.join(", ")}
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-slate-500">{triage.urgent_hint}</p>
+                {triage.specialization ? (
+                  <Button className="mt-3" onClick={selectRecommendedSpecialization}>
+                    Выбрать {triage.specialization.name}
+                  </Button>
+                ) : (
+                  <p className="mt-3 text-sm text-slate-600">
+                    Такой специальности пока нет в расписании.
+                  </p>
+                )}
+              </div>
+            )}
+          </Card>
+
           {specializations.length === 0 && (
             <p className="text-slate-500">Загрузка...</p>
           )}

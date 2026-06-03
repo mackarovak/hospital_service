@@ -1,0 +1,814 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+data:
+  loki.yml: |
+    apiVersion: 1
+
+    datasources:
+      - name: Loki
+        uid: Loki
+        type: loki
+        access: proxy
+        url: http://loki:3100
+        isDefault: true
+        editable: true
+      - name: Prometheus
+        uid: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        editable: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provider
+data:
+  dashboards.yml: |
+    apiVersion: 1
+
+    providers:
+      - name: MedCat
+        orgId: 1
+        folder: MedCat
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-medcat-dashboard
+data:
+  medcat-logs.json: |
+    {
+      "editable": true,
+      "panels": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+          "id": 1,
+          "options": {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-(backend|frontend).*\"}",
+              "refId": "A"
+            }
+          ],
+          "title": "Application Logs",
+          "type": "logs"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 2,
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "sum by (status) (count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-backend.*\"} |= \"request method=\" | regexp \"status=(?P<status>[0-9]+)\" [$__auto]))",
+              "refId": "A"
+            }
+          ],
+          "title": "Backend Requests By Status",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 3,
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "quantile_over_time(0.95, {namespace=\"team-1-ns\", filename=~\".*medcat-backend.*\"} |= \"request method=\" | regexp \"duration_ms=(?P<duration_ms>[0-9]+)\" | unwrap duration_ms [$__auto])",
+              "refId": "A"
+            }
+          ],
+          "title": "Backend P95 Duration",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+          "id": 4,
+          "options": {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"}",
+              "refId": "A"
+            }
+          ],
+          "title": "k6 Scheduled Load Test Logs",
+          "type": "logs"
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["medcat", "loki"],
+      "time": {"from": "now-15m", "to": "now"},
+      "timezone": "browser",
+      "title": "MedCat Logs",
+      "uid": "medcat-logs",
+      "version": 1
+    }
+  medcat-load-tests.json: |
+    {
+      "editable": true,
+      "graphTooltip": 0,
+      "panels": [
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null}
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+          "id": 101,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "count(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"default ✓ [ 100% ]\" [$__range]) > 0) or vector(0)",
+              "refId": "A"
+            }
+          ],
+          "title": "Successful k6 Runs in Range",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+          "id": 102,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "count(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"level=error|thresholds on metrics\" [$__range]) > 0) or vector(0)",
+              "refId": "A"
+            }
+          ],
+          "title": "k6 Problems",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 3},
+                  {"color": "red", "value": 10}
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+          "id": 103,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "max(max_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"http_req_duration\" | regexp \"p\\\\(95\\\\)=(?P<p95>[0-9.]+)s\" | unwrap p95 [$__range]))",
+              "refId": "A"
+            }
+          ],
+          "title": "Latest k6 p95",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+          "id": 104,
+          "options": {
+            "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "sum(rate({namespace=\"team-1-ns\", filename=~\".*medcat-backend.*\"} |~ \"\\\\\\\"(GET|POST|PATCH|DELETE) |request method=\" [$__auto]))",
+              "refId": "A"
+            }
+          ],
+          "title": "Backend Request Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+          "id": 105,
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "sum by (status) (rate({namespace=\"team-1-ns\", filename=~\".*medcat-backend.*\"} | regexp \"HTTP/[0-9.]+\\\\\\\" (?P<status>[0-9]{3})\" [$__auto]))",
+              "refId": "A"
+            }
+          ],
+          "title": "Backend Responses By Status",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 3},
+                  {"color": "red", "value": 10}
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+          "id": 106,
+          "options": {
+            "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "max_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"http_req_duration\" | regexp \"p\\\\(95\\\\)=(?P<p95>[0-9.]+)s\" | unwrap p95 [$__auto])",
+              "refId": "A"
+            }
+          ],
+          "title": "k6 p95 Over Runs",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 7, "w": 12, "x": 0, "y": 12},
+          "id": 107,
+          "options": {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"checks|http_req_duration|http_req_failed|http_reqs|default ✓|level=error\"",
+              "refId": "A"
+            }
+          ],
+          "title": "k6 Summary",
+          "type": "logs"
+        },
+        {
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "gridPos": {"h": 7, "w": 12, "x": 12, "y": 12},
+          "id": 108,
+          "options": {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true
+          },
+          "targets": [
+            {
+              "datasource": {"type": "loki", "uid": "Loki"},
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-backend.*\"} |~ \" 5[0-9][0-9] |status=5\"",
+              "refId": "A"
+            }
+          ],
+          "title": "Backend 5xx Logs",
+          "type": "logs"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["medcat", "k6", "load-tests"],
+      "time": {"from": "now-6h", "to": "now"},
+      "timezone": "browser",
+      "title": "MedCat Load Tests",
+      "uid": "medcat-load-tests",
+      "version": 1
+    }
+  medcat-kubernetes-jobs.json: |
+    {
+      "editable": true,
+      "graphTooltip": 0,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [
+                {
+                  "options": {
+                    "0": {"color": "red", "index": 0, "text": "Missing"},
+                    "1": {"color": "green", "index": 1, "text": "Present"}
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+          "id": 201,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "count(kube_cronjob_info{namespace=\"team-1-ns\", cronjob=\"medcat-k6-read\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "CronJob",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [
+                {
+                  "options": {
+                    "0": {"color": "green", "index": 0, "text": "Enabled"},
+                    "1": {"color": "red", "index": 1, "text": "Suspended"}
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+          "id": 202,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "kube_cronjob_spec_suspend{namespace=\"team-1-ns\", cronjob=\"medcat-k6-read\"}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Schedule State",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 2}
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+          "id": 203,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "kube_cronjob_status_active{namespace=\"team-1-ns\", cronjob=\"medcat-k6-read\"}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Active Jobs",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null}
+                ]
+              },
+              "unit": "dateTimeAsIso"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+          "id": 204,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "kube_cronjob_status_last_schedule_time{namespace=\"team-1-ns\", cronjob=\"medcat-k6-read\"} * 1000",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Last Scheduled",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+          "id": 205,
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "sum(kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
+              "legendFormat": "succeeded",
+              "refId": "A"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "sum(kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
+              "legendFormat": "failed",
+              "refId": "B"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "sum(kube_job_status_active{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
+              "legendFormat": "active",
+              "refId": "C"
+            }
+          ],
+          "title": "k6 Job Status Totals",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+          "id": 206,
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"}",
+              "legendFormat": "{{job_name}} succeeded",
+              "refId": "A"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"}",
+              "legendFormat": "{{job_name}} failed",
+              "refId": "B"
+            }
+          ],
+          "title": "Individual k6 Jobs",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 2}
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 5, "w": 8, "x": 0, "y": 12},
+          "id": 207,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "sum(kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Failed k6 Jobs",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null}
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 5, "w": 8, "x": 8, "y": 12},
+          "id": 208,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "sum(kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Successful k6 Jobs",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "Prometheus"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 3600},
+                  {"color": "red", "value": 10800}
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 5, "w": 8, "x": 16, "y": 12},
+          "id": 209,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "Prometheus"},
+              "expr": "time() - kube_cronjob_status_last_schedule_time{namespace=\"team-1-ns\", cronjob=\"medcat-k6-read\"}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Seconds Since Last Schedule",
+          "type": "stat"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["medcat", "kubernetes", "cronjob", "k6"],
+      "time": {"from": "now-12h", "to": "now"},
+      "timezone": "browser",
+      "title": "MedCat Kubernetes Jobs",
+      "uid": "medcat-kubernetes-jobs",
+      "version": 1
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.4.12
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: admin
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: medcat-team1-grafana
+            - name: GF_USERS_DEFAULT_THEME
+              value: light
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 384Mi
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboard-provider
+          configMap:
+            name: grafana-dashboard-provider
+        - name: dashboards
+          configMap:
+            name: grafana-medcat-dashboard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

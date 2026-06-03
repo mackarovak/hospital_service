@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: medcat-k6-read
+spec:
+  schedule: "0 */2 * * *"
+  timeZone: Europe/Moscow
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: medcat-k6
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: k6
+              image: grafana/k6:0.49.0
+              env:
+                - name: BASE_URL
+                  value: http://medcat-team1.213-165-209-28.nip.io
+              command:
+                - sh
+                - -c
+              args:
+                - >
+                  mkdir -p /scripts/lib &&
+                  cp /config/medcat.js /scripts/lib/medcat.js &&
+                  cp /config/medcat-read.js /scripts/medcat-read.js &&
+                  k6 run /scripts/medcat-read.js
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 150m
+                  memory: 256Mi
+              volumeMounts:
+                - name: scripts
+                  mountPath: /config
+                  readOnly: true
+                - name: workdir
+                  mountPath: /scripts
+          volumes:
+            - name: scripts
+              configMap:
+                name: medcat-k6-scripts
+            - name: workdir
+              emptyDir: {}

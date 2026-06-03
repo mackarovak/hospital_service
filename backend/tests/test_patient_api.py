@@ -10,6 +10,7 @@ from medical.models import (
     DoctorPatient,
     MedicalRecord,
     Patient,
+    Specialization,
     User,
     UserRole,
 )
@@ -184,3 +185,50 @@ def test_patient_cannot_edit_medical_records_through_profile(patient_context):
     assert response.status_code == 200
     patient_context["record"].refresh_from_db()
     assert patient_context["record"].diagnosis_text == "URI"
+
+
+def test_patient_can_get_triage_recommendation(patient_context):
+    spec = Specialization.objects.create(name="Кардиолог")
+    Doctor.objects.create(
+        user=_make_user("doctor2", UserRole.DOCTOR),
+        first_name="Sergey",
+        last_name="Sergeev",
+        specialization=spec,
+    )
+
+    response = Client().post(
+        "/api/v1/patient/triage",
+        data=json.dumps({"comment": "Боль в груди и одышка"}),
+        content_type="application/json",
+        **_auth_header(patient_context["patient_user"]),
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["urgency"] == "HIGH"
+    assert body["recommended_specialization"] == "Кардиолог"
+    assert body["specialization"]["id"] == str(spec.id)
+    assert body["available_doctors_count"] == 1
+
+
+def test_triage_requires_symptoms(patient_context):
+    response = Client().post(
+        "/api/v1/patient/triage",
+        data=json.dumps({"comment": ""}),
+        content_type="application/json",
+        **_auth_header(patient_context["patient_user"]),
+    )
+
+    assert response.status_code == 400
+    assert "symptoms" in response.json()["errors"]
+
+
+def test_doctor_cannot_use_patient_triage(patient_context):
+    response = Client().post(
+        "/api/v1/patient/triage",
+        data=json.dumps({"comment": "температура и кашель"}),
+        content_type="application/json",
+        **_auth_header(patient_context["doctor_user"]),
+    )
+
+    assert response.status_code == 403
