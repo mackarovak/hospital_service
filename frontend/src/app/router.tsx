@@ -12,6 +12,7 @@ import { PatientAppointmentsPage } from "../features/patient/PatientAppointments
 import { PatientBookingPage } from "../features/patient/PatientBookingPage";
 import { PatientDashboard } from "../features/patient/PatientDashboard";
 import { PatientMedicalCardPage } from "../features/patient/PatientMedicalCardPage";
+import { PatientMedicalCardPrintPage } from "../features/patient/PatientMedicalCardPrintPage";
 import { PatientProfileForm } from "../features/patient/PatientProfileForm";
 import { Layout } from "../shared/ui/Layout";
 
@@ -53,6 +54,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={["PATIENT"]}>
             <PatientMedicalCardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "patient/medical-card/print",
+        element: (
+          <ProtectedRoute allowedRoles={["PATIENT"]}>
+            <PatientMedicalCardPrintPage />
           </ProtectedRoute>
         ),
       },

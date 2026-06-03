@@ -58,12 +58,28 @@ export function DoctorSchedulePage() {
   const bookedSlots = slots.filter((s) => s.patient !== null);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-xl font-semibold text-slate-950">Расписание</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-medium text-sky-700">Расписание</p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Приемные окна</h1>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:flex">
+          <span className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+            Свободно: {freeSlots.length}
+          </span>
+          <span className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+            Занято: {bookedSlots.length}
+          </span>
+        </div>
+      </div>
 
-      <Card>
-        <h2 className="font-medium text-slate-900">Добавить окно приёма</h2>
-        <form className="mt-3 space-y-3" onSubmit={handleCreate}>
+      <Card className="overflow-hidden p-0">
+        <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
+          <h2 className="text-lg font-semibold text-slate-950">Добавить окно приема</h2>
+          <p className="mt-1 text-sm text-slate-600">Укажите начало и конец свободного времени.</p>
+        </div>
+        <form className="grid gap-4 p-6 md:grid-cols-[1fr_1fr_auto]" onSubmit={handleCreate}>
           <label className="block text-sm font-medium text-slate-700">
             Начало
             <input
@@ -71,7 +87,7 @@ export function DoctorSchedulePage() {
               value={startsAt}
               onChange={(e) => setStartsAt(e.target.value)}
               required
-              className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
+              className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
             />
           </label>
           <label className="block text-sm font-medium text-slate-700">
@@ -81,11 +97,17 @@ export function DoctorSchedulePage() {
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}
               required
-              className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
+              className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
             />
           </label>
-          {formError && <p className="text-sm text-red-600">{formError}</p>}
-          <Button type="submit">Добавить окно</Button>
+          <div className="flex items-end">
+            <Button className="w-full" type="submit">Добавить</Button>
+          </div>
+          {formError && (
+            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 md:col-span-3">
+              {formError}
+            </p>
+          )}
         </form>
       </Card>
 
@@ -93,25 +115,24 @@ export function DoctorSchedulePage() {
 
       {!loading && (
         <>
-          <section className="space-y-2">
-            <h2 className="font-medium text-slate-900">
-              Свободные окна ({freeSlots.length})
-            </h2>
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-slate-950">Свободные окна</h2>
             {freeSlots.length === 0 && (
-              <p className="text-sm text-slate-500">Нет свободных окон.</p>
+              <p className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-500">Нет свободных окон.</p>
             )}
             {freeSlots.map((slot) => (
               <div
                 key={slot.id}
-                className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-4 py-3"
+                className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between"
               >
-                <p className="text-sm text-slate-900">
-                  {formatDateTime(slot.starts_at)} — {formatTime(slot.ends_at)}
-                </p>
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">{formatDateTime(slot.starts_at)}</p>
+                  <p className="text-sm text-slate-500">{formatTime(slot.starts_at)} - {formatTime(slot.ends_at)}</p>
+                </div>
                 <Button
-                  variant="secondary"
+                  variant="danger"
                   onClick={() => handleDelete(slot.id)}
-                  className="ml-4 shrink-0"
+                  className="shrink-0"
                 >
                   Удалить
                 </Button>
@@ -119,23 +140,20 @@ export function DoctorSchedulePage() {
             ))}
           </section>
 
-          <section className="space-y-2">
-            <h2 className="font-medium text-slate-900">
-              Занятые окна ({bookedSlots.length})
-            </h2>
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-slate-950">Занятые окна</h2>
             {bookedSlots.length === 0 && (
-              <p className="text-sm text-slate-500">Нет занятых окон.</p>
+              <p className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-500">Нет занятых окон.</p>
             )}
             {bookedSlots.map((slot) => (
               <div
                 key={slot.id}
-                className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-4 py-3"
+                className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm"
               >
                 <div>
-                  <p className="text-sm text-slate-900">
-                    {formatDateTime(slot.starts_at)} — {formatTime(slot.ends_at)}
-                  </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-semibold text-slate-950">{formatDateTime(slot.starts_at)}</p>
+                  <p className="text-sm text-slate-500">{formatTime(slot.starts_at)} - {formatTime(slot.ends_at)}</p>
+                  <p className="mt-1 text-xs font-medium text-sky-700">
                     Пациент: {slot.patient?.full_name}
                   </p>
                 </div>

@@ -1,137 +1,308 @@
-# MedCat MVP Lite
+# MedCat
 
-Минимальная электронная медкарта пациента.
+MedCat - учебный сервис электронной медицинской карты и записи к врачу.
+
+Проект покрывает два основных сценария:
+
+- пациент ведет профиль, смотрит медкарту, подбирает специальность по симптомам и записывается на прием;
+- врач смотрит своих пациентов, ведет медицинские записи и управляет расписанием.
+
+Дополнительно в проект добавлены мониторинг, нагрузочные тесты, CI/CD и Kubernetes-манифесты.
 
 ## Stack
 
-- Backend: Python + Django
-- Frontend: React + TypeScript + Tailwind CSS
+- Backend: Django, Django REST Framework
+- Frontend: React, TypeScript, Tailwind CSS, Vite
 - Database: PostgreSQL
+- Auth: JWT
+- Observability: Grafana, Loki, Promtail, Prometheus, kube-state-metrics
+- Load tests: k6
+- Deploy: Docker Compose, Kubernetes, GitHub Actions, GHCR
 
-## MVP Lite
+## Возможности
 
-- пациент смотрит и заполняет свою медкарту;
-- врач смотрит своих пациентов;
-- врач добавляет записи в медкарту.
+### Пациент
+
+- регистрация и вход;
+- просмотр личного кабинета;
+- заполнение профиля;
+- просмотр медицинской карты;
+- печатная выписка из медкарты с сохранением в PDF через браузер;
+- подбор специальности по симптомам без внешних AI/API;
+- запись к врачу;
+- просмотр и отмена своих записей.
+
+### Врач
+
+- регистрация и вход;
+- просмотр кабинета врача;
+- список пациентов с поиском;
+- просмотр медкарты пациента;
+- добавление и редактирование медицинских записей;
+- управление свободными окнами приема.
+
+### Подбор специальности по симптомам
+
+Rule-based triage подбирает специальность по ключевым словам и возвращает:
+
+- рекомендуемую специальность;
+- уровень срочности;
+- причину рекомендации;
+- найденные совпавшие симптомы;
+- предупреждение про экстренные случаи.
+
+Поддерживаемые специальности:
+
+- Терапевт
+- Хирург
+- Кардиолог
+- Дерматолог
+- Гастроэнтеролог
+- Невролог
+- ЛОР
+- Офтальмолог
+- Стоматолог
+- Ортопед
+- Уролог
+- Гинеколог
+- Эндокринолог
+- Педиатр
 
 ## Локальный запуск
 
-### Предварительные требования
+### Требования
 
+- Docker + Docker Compose
 - Python 3.11+
 - Node.js 20+
-- Docker + Docker Compose (для способа 1)
 
----
+### Docker Compose
 
-### Способ 1 — Docker Compose (рекомендуется)
-
-Поднимает PostgreSQL 16, бэкенд на `http://localhost:8000` и фронтенд на `http://localhost:5173`. Миграции и seed выполняются автоматически.
+Рекомендуемый способ запуска:
 
 ```bash
-docker compose up
+PUBLIC_HOST=localhost docker compose up -d --build
 ```
 
----
+После запуска:
 
-### Способ 2 — Вручную (SQLite, без Docker)
+| Сервис | URL |
+| --- | --- |
+| Frontend | `http://localhost` |
+| Backend API | `http://localhost:8000/api/v1` |
+| Grafana | `http://localhost:3000` |
+| Loki | `http://localhost:3100` |
 
-**Backend** (терминал 1):
+Grafana локально:
+
+```text
+admin / admin
+```
+
+Проверка backend:
+
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
+Остановить проект:
+
+```bash
+docker compose down
+```
+
+Остановить и удалить локальные volumes:
+
+```bash
+docker compose down -v
+```
+
+`down -v` удалит локальную PostgreSQL-базу и данные Grafana/Loki.
+
+### Ручной запуск
+
+Backend:
 
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
 python scripts/seed.py
-python manage.py runserver      # http://localhost:8000
+python manage.py runserver
 ```
 
-**Frontend** (терминал 2):
+Frontend:
 
 ```bash
 cd frontend
 npm install
-npm run dev                     # http://localhost:5173
+npm run dev
 ```
 
----
+## Демо-аккаунты
 
-### Демо-аккаунты
-
-После seed оба способа создают одинаковых пользователей:
+Seed создает пользователей:
 
 | Логин | Пароль | Роль |
-|-------|--------|------|
+| --- | --- | --- |
 | `patient1` | `password` | Пациент |
 | `doctor1` | `password` | Врач |
 
----
+## Переменные окружения
 
-### Переменные окружения
+Основные переменные:
 
-Скопируйте `.env.example` в `.env` в корне репозитория и при необходимости измените значения.
+| Переменная | Описание |
+| --- | --- |
+| `DJANGO_DEBUG` | Debug-режим Django |
+| `DJANGO_SECRET_KEY` | Django secret key |
+| `JWT_SECRET` | Секрет для JWT |
+| `DATABASE_ENGINE` | `sqlite3` или `postgres` |
+| `POSTGRES_DB` | Имя PostgreSQL-базы |
+| `POSTGRES_USER` | Пользователь PostgreSQL |
+| `POSTGRES_PASSWORD` | Пароль PostgreSQL |
+| `POSTGRES_HOST` | Хост PostgreSQL |
+| `POSTGRES_PORT` | Порт PostgreSQL |
+| `FRONTEND_URL` | CORS origin frontend |
+| `VITE_API_URL` | URL backend API для frontend |
+| `PUBLIC_HOST` | Хост для локального Docker Compose |
 
-| Переменная | По умолчанию | Описание |
-|------------|-------------|----------|
-| `DJANGO_DEBUG` | `False` | Включить debug-режим |
-| `DJANGO_SECRET_KEY` | авто в debug | Django signing key |
-| `JWT_SECRET` | авто в debug | Секрет для JWT-токенов |
-| `DATABASE_ENGINE` | `sqlite3` | Установить `postgres` для PostgreSQL |
-| `POSTGRES_DB` | `medcat` | Имя базы данных |
-| `POSTGRES_USER` | `medcat` | Пользователь БД |
-| `POSTGRES_PASSWORD` | `medcat_password` | Пароль БД |
-| `POSTGRES_HOST` | `localhost` | Хост БД |
-| `POSTGRES_PORT` | `5432` | Порт БД |
-| `FRONTEND_URL` | `http://localhost:5173` | CORS origin для фронтенда |
+В dev-режиме секреты могут быть тестовыми. Для production/stage их нужно задавать явно.
 
-В dev-режиме (`DJANGO_DEBUG=True`) `DJANGO_SECRET_KEY` и `JWT_SECRET` генерируются автоматически — файл `.env` не обязателен.
+## Проверки
 
----
-
-### Тесты
+Backend tests:
 
 ```bash
 cd backend
 pytest
 ```
 
----
+Frontend build:
 
-### Логи и Grafana
+```bash
+cd frontend
+npm run build
+```
 
-`docker compose up` также поднимает:
+Из корня проекта:
 
-| Сервис | URL |
-|--------|-----|
-| Grafana | `http://localhost:3000` |
-| Loki | `http://localhost:3100` |
+```bash
+npm --prefix frontend run build
+```
 
-Логин Grafana: `admin`, пароль: `admin`.
+Kubernetes manifests:
 
-В Grafana уже настроен datasource `Loki` и dashboard `MedCat Logs`.
-Promtail собирает stdout-логи контейнеров `backend` и `frontend`, а backend пишет request-логи вида:
+```bash
+kubectl kustomize k8s
+kubectl kustomize k8s/observability
+kubectl kustomize k8s/load-tests
+```
+
+## CI/CD
+
+В проекте есть GitHub Actions.
+
+### Pull Request CI
+
+`.github/workflows/ci.yml` запускается на PR в `main` и проверяет:
+
+- backend tests;
+- frontend build;
+- Docker build backend image;
+- Docker build frontend image.
+
+### Publish images
+
+`.github/workflows/publish-images.yml` запускается на push в `main` и вручную через `workflow_dispatch`.
+
+Workflow:
+
+1. запускает backend tests;
+2. собирает frontend;
+3. собирает Docker images;
+4. публикует images в GHCR:
+   - `ghcr.io/mackarovak/hospital_service-backend:latest`
+   - `ghcr.io/mackarovak/hospital_service-frontend:latest`
+5. при наличии secret `KUBECONFIG_TEAM_1` перезапускает Kubernetes deployments:
+   - `medcat-backend`
+   - `medcat-frontend`
+
+## Kubernetes
+
+Основной стенд:
+
+```text
+http://medcat-team1.213-165-209-28.nip.io
+```
+
+Применить основные манифесты:
+
+```bash
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml apply -k k8s
+```
+
+Перезапустить приложение:
+
+```bash
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns rollout restart deployment/medcat-backend
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns rollout restart deployment/medcat-frontend
+```
+
+Проверить rollout:
+
+```bash
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns rollout status deployment/medcat-backend
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns rollout status deployment/medcat-frontend
+```
+
+## Observability
+
+Локально observability поднимается через `docker compose up`.
+
+В Kubernetes:
+
+```bash
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml apply -k k8s/observability
+```
+
+Публичная Grafana:
+
+```text
+http://grafana-medcat-team1.213-165-209-28.nip.io
+```
+
+Логин:
+
+```text
+admin / medcat-team1-grafana
+```
+
+Dashboards:
+
+- `MedCat Logs` - логи backend/frontend и k6;
+- `MedCat Load Tests` - k6 runs, problems, p95, request rate, 5xx logs;
+- `MedCat Kubernetes Jobs` - CronJob, active jobs, succeeded/failed jobs.
+
+Backend пишет request-логи:
 
 ```text
 request method=GET path=/api/v1/health status=200 duration_ms=3
 ```
 
-### Нагрузочный smoke-тест
+## Load tests
 
-Установите k6 и запустите короткий сценарий:
+Локальные сценарии лежат в `load-tests/`.
+
+Smoke test:
 
 ```bash
 k6 run load-tests/medcat-smoke.js
 ```
 
-Для проверки публичного стенда:
-
-```bash
-BASE_URL=http://medcat-team1.213-165-209-28.nip.io k6 run load-tests/medcat-smoke.js
-```
-
-Более подробные сценарии лежат в `load-tests/README.md`:
+Публичный стенд:
 
 ```bash
 BASE_URL=http://medcat-team1.213-165-209-28.nip.io k6 run load-tests/medcat-read.js
@@ -139,48 +310,34 @@ BASE_URL=http://medcat-team1.213-165-209-28.nip.io k6 run load-tests/medcat-work
 BASE_URL=http://medcat-team1.213-165-209-28.nip.io k6 run load-tests/medcat-stress.js
 ```
 
-После запуска теста откройте Grafana и dashboard `MedCat Logs`.
-
-Автоматический запуск read-нагрузки каждые 2 часа в Kubernetes:
+Kubernetes CronJob запускает read-нагрузку каждые 2 часа:
 
 ```bash
 kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml apply -k k8s/load-tests
 ```
 
-Запустить такой же тест вручную вне расписания:
+Запустить вручную:
 
 ```bash
 kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns create job --from=cronjob/medcat-k6-read medcat-k6-read-manual
 ```
 
-Логи и графики этих запусков видны в Grafana в dashboard `MedCat Load Tests`.
-
-Статус Kubernetes CronJob и связанных Jobs виден в dashboard `MedCat Kubernetes Jobs`:
-
-```text
-http://grafana-medcat-team1.213-165-209-28.nip.io/d/medcat-kubernetes-jobs/medcat-kubernetes-jobs
-```
-
-### Grafana и Loki в Kubernetes
-
-Наблюдаемость можно поставить в текущий namespace `team-1-ns` отдельным kustomize-пакетом:
+Статус CronJob:
 
 ```bash
-kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml apply -k k8s/observability
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns get cronjob medcat-k6-read
+kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns get jobs
 ```
 
-Grafana для команды доступна публично:
+## Структура проекта
 
 ```text
-http://grafana-medcat-team1.213-165-209-28.nip.io
+backend/                Django backend
+frontend/               React frontend
+k8s/                    Kubernetes manifests
+k8s/observability/      Grafana, Loki, Promtail, Prometheus, kube-state-metrics
+k8s/load-tests/         k6 CronJob
+load-tests/             local k6 scenarios
+monitoring/             local Grafana/Loki/Promtail config
+.github/workflows/      CI/CD workflows
 ```
-
-Логин `admin`, пароль `medcat-team1-grafana`.
-
-Если публичный Ingress недоступен, откройте ее через port-forward:
-
-```bash
-kubectl --kubeconfig /Users/ksenia/Downloads/kubeconfig-team-1.yaml -n team-1-ns port-forward svc/grafana 3000:3000
-```
-
-После этого Grafana будет доступна на `http://localhost:3000`.

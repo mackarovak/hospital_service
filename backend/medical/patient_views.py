@@ -108,7 +108,7 @@ def _validate_profile_payload(payload: dict) -> dict:
         except ValueError:
             errors["date_of_birth"] = "Must be a valid ISO date"
         else:
-            if parsed_date > date.today():
+            if parsed_date > timezone.now().date():
                 errors["date_of_birth"] = "Must not be in the future"
             payload["date_of_birth"] = parsed_date
 

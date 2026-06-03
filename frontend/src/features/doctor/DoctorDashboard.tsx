@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { api } from "../../shared/api/client";
 import type { DoctorPatientsResponse } from "../../shared/types/medical";
+import { Button } from "../../shared/ui/Button";
 import { Card } from "../../shared/ui/Card";
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -31,16 +32,58 @@ export function DoctorDashboard() {
   if (error) return <p className="py-10 text-center text-sm text-red-600">{error}</p>;
 
   return (
-    <Card>
-      <h1 className="text-xl font-semibold text-slate-950">Кабинет врача</h1>
-      <div className="mt-5 grid gap-5 sm:grid-cols-3">
-        <Field label="ФИО врача" value={data?.doctor.full_name} />
-        <Field label="Специализация" value={data?.doctor.specialization} />
-        <Field label="Количество пациентов" value={data?.total ?? 0} />
+    <div className="space-y-5">
+      <Card className="overflow-hidden p-0">
+        <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
+          <p className="text-sm font-medium text-sky-700">Кабинет врача</p>
+          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-950">{data?.doctor.full_name || "—"}</h1>
+              <p className="mt-1 text-sm text-slate-500">{data?.doctor.specialization || "Специализация не указана"}</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/doctor/patients">
+                <Button>Открыть пациентов</Button>
+              </Link>
+              <Link to="/doctor/schedule">
+                <Button variant="secondary">Расписание</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className="grid gap-0 divide-y divide-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="p-5">
+            <Field label="ФИО врача" value={data?.doctor.full_name} />
+          </div>
+          <div className="p-5">
+            <Field label="Специализация" value={data?.doctor.specialization} />
+          </div>
+          <div className="p-5">
+            <Field label="Количество пациентов" value={data?.total ?? 0} />
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-5 md:grid-cols-2">
+        <Card>
+          <h2 className="text-lg font-semibold text-slate-950">Пациенты</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Быстрый доступ к медицинским картам и истории приемов.
+          </p>
+          <Link className="mt-4 inline-flex" to="/doctor/patients">
+            <Button variant="secondary">Перейти к списку</Button>
+          </Link>
+        </Card>
+        <Card>
+          <h2 className="text-lg font-semibold text-slate-950">Приемные окна</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Добавляйте свободное время и отслеживайте занятые слоты.
+          </p>
+          <Link className="mt-4 inline-flex" to="/doctor/schedule">
+            <Button variant="secondary">Настроить расписание</Button>
+          </Link>
+        </Card>
       </div>
-      <Link className="mt-6 inline-flex text-sm font-medium text-sky-700 hover:text-sky-900" to="/doctor/patients">
-        Открыть список пациентов
-      </Link>
-    </Card>
+    </div>
   );
 }
