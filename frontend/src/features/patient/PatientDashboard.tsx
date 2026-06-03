@@ -8,8 +8,8 @@ import { Card } from "../../shared/ui/Card";
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
+    <div className="rounded-md border border-slate-100 bg-slate-50 p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-0.5 text-sm text-slate-900">{value || "—"}</p>
     </div>
   );
@@ -46,14 +46,17 @@ export function PatientDashboard() {
   ].filter(Boolean).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Card className="overflow-hidden p-0">
-        <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
-          <p className="text-sm font-medium text-sky-700">Кабинет пациента</p>
-          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="border-b border-sky-100 bg-gradient-to-r from-white via-sky-50 to-white px-6 py-6">
+          <div className="flex items-center gap-3 text-sm font-semibold text-sky-700">
+            <span className="medical-mark flex h-8 w-8 items-center justify-center rounded-md bg-sky-700 text-white" aria-hidden="true" />
+            <span>Кабинет пациента</span>
+          </div>
+          <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-slate-950">{fullName}</h1>
-              <p className="mt-1 text-sm text-slate-500">Медкарта {card.card_number}</p>
+              <h1 className="text-3xl font-semibold leading-tight text-slate-950">{fullName}</h1>
+              <p className="mt-2 text-sm text-slate-600">Медкарта {card.card_number}</p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link to="/patient/book">
@@ -65,26 +68,31 @@ export function PatientDashboard() {
             </div>
           </div>
         </div>
-        <div className="grid gap-0 divide-y divide-slate-200 p-0 md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div className="grid gap-0 divide-y divide-slate-100 p-0 md:grid-cols-3 md:divide-x md:divide-y-0">
           <div className="p-5">
-            <p className="text-xs font-medium uppercase text-slate-400">Статус медкарты</p>
-            <p className="mt-2 text-lg font-semibold text-emerald-700">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Статус медкарты</p>
+            <p className="mt-2 inline-flex rounded-md bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
               {card.status === "ACTIVE" ? "Активна" : "Архив"}
             </p>
           </div>
           <div className="p-5">
-            <p className="text-xs font-medium uppercase text-slate-400">Заполненность профиля</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Заполненность профиля</p>
             <p className="mt-2 text-lg font-semibold text-slate-950">{filledFields}/7</p>
           </div>
           <div className="p-5">
-            <p className="text-xs font-medium uppercase text-slate-400">Записей в карте</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Записей в карте</p>
             <p className="mt-2 text-lg font-semibold text-slate-950">{data.records.length}</p>
           </div>
         </div>
       </Card>
 
       <Card>
-        <h2 className="text-lg font-semibold text-slate-950">Основные данные</h2>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold text-slate-950">Основные данные</h2>
+          <span className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
+            Медицинский профиль
+          </span>
+        </div>
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Дата рождения" value={p.date_of_birth} />
           <Field label="Пол" value={p.gender} />
@@ -97,7 +105,7 @@ export function PatientDashboard() {
       </Card>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <Card>
+        <Card className="transition hover:border-sky-200 hover:shadow-md hover:shadow-sky-100">
           <h2 className="text-lg font-semibold text-slate-950">Медицинская карта</h2>
           <p className="mt-2 text-sm text-slate-600">
             Просматривайте записи врачей, назначения и историю обращений.
@@ -106,7 +114,7 @@ export function PatientDashboard() {
             <Button variant="secondary">Открыть медкарту</Button>
           </Link>
         </Card>
-        <Card>
+        <Card className="transition hover:border-sky-200 hover:shadow-md hover:shadow-sky-100">
           <h2 className="text-lg font-semibold text-slate-950">Ближайшие записи</h2>
           <p className="mt-2 text-sm text-slate-600">
             Управляйте записями и отменяйте приемы, если планы изменились.

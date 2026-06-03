@@ -27,7 +27,7 @@ const EMPTY_FORM: MedicalRecordFormValues = {
 };
 
 const textareaClass =
-  "mt-1 min-h-24 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100";
+  "mt-1 min-h-24 w-full resize-y rounded-md border border-slate-200 bg-white/95 px-3 py-2 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-100";
 
 function recordToForm(record?: MedicalRecord | null): MedicalRecordFormValues {
   if (!record) return EMPTY_FORM;

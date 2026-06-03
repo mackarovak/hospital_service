@@ -1,10 +1,16 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import type { UserRole } from "../types/auth";
 
 export function Layout() {
   const navigate = useNavigate();
   const role = localStorage.getItem("user_role") as UserRole | null;
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `rounded-md px-3 py-2 transition ${
+      isActive
+        ? "bg-sky-700 text-white shadow-sm shadow-sky-900/20"
+        : "text-slate-600 hover:bg-sky-50 hover:text-sky-900"
+    }`;
 
   function handleLogout() {
     localStorage.removeItem("access_token");
@@ -13,55 +19,59 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <Link className="flex items-center gap-2 text-base font-semibold text-slate-950" to="/">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-sky-700 text-sm font-bold text-white">
-              M
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/92 shadow-sm shadow-slate-200/60 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+          <Link className="flex items-center gap-3 text-base font-semibold text-slate-950" to="/">
+            <span className="medical-mark flex h-10 w-10 items-center justify-center rounded-md bg-sky-700 text-white shadow-sm shadow-sky-900/20" aria-hidden="true">
             </span>
-            <span>MedCat</span>
+            <span>
+              <span className="block leading-5">MedCat</span>
+              <span className="block text-xs font-medium text-slate-500">
+                {role === "DOCTOR" ? "Рабочее место врача" : "Медицинский кабинет"}
+              </span>
+            </span>
           </Link>
-          <nav className="flex flex-wrap items-center justify-end gap-2 text-sm text-slate-600">
+          <nav className="flex flex-wrap items-center justify-end gap-2 text-sm font-medium">
             {role === "PATIENT" && (
               <>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient">
+                <NavLink className={navLinkClass} to="/patient" end>
                   Главная
-                </Link>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/medical-card">
+                </NavLink>
+                <NavLink className={navLinkClass} to="/patient/medical-card">
                   Моя медкарта
-                </Link>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/book">
+                </NavLink>
+                <NavLink className={navLinkClass} to="/patient/book">
                   Записаться к врачу
-                </Link>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/appointments">
+                </NavLink>
+                <NavLink className={navLinkClass} to="/patient/appointments">
                   Мои записи
-                </Link>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/patient/profile">
+                </NavLink>
+                <NavLink className={navLinkClass} to="/patient/profile">
                   Мои данные
-                </Link>
+                </NavLink>
               </>
             )}
             {role === "DOCTOR" && (
               <>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/doctor">
+                <NavLink className={navLinkClass} to="/doctor" end>
                   Главная
-                </Link>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/doctor/patients">
+                </NavLink>
+                <NavLink className={navLinkClass} to="/doctor/patients">
                   Мои пациенты
-                </Link>
-                <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" to="/doctor/schedule">
+                </NavLink>
+                <NavLink className={navLinkClass} to="/doctor/schedule">
                   Расписание
-                </Link>
+                </NavLink>
               </>
             )}
-            <button className="rounded-md px-3 py-2 text-slate-500 hover:bg-slate-100 hover:text-slate-950" onClick={handleLogout}>
+            <button className="rounded-md px-3 py-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-950" onClick={handleLogout}>
               Выйти
             </button>
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-7">
+      <main className="mx-auto max-w-7xl px-4 py-8">
         <Outlet />
       </main>
     </div>

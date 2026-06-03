@@ -1,15 +1,17 @@
 import type { ButtonHTMLAttributes } from "react";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger" | "ghost";
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "inverse" | "onDark";
 };
 
 export function Button({ className = "", variant = "primary", ...props }: ButtonProps) {
   const variantClass = {
-    primary: "bg-sky-700 text-white shadow-sm shadow-sky-900/10 hover:bg-sky-800",
-    secondary: "border border-slate-300 bg-white text-slate-800 shadow-sm hover:border-slate-400 hover:bg-slate-50",
+    primary: "bg-sky-700 text-white shadow-sm shadow-sky-900/20 hover:bg-sky-800",
+    secondary: "border border-slate-200 bg-white text-slate-800 shadow-sm hover:border-sky-200 hover:bg-sky-50 hover:text-sky-900",
     danger: "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100",
     ghost: "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-950",
+    inverse: "bg-sky-50 text-sky-900 shadow-sm shadow-sky-900/10 hover:bg-sky-100",
+    onDark: "border border-sky-200 bg-white text-sky-800 hover:bg-sky-50",
   }[variant];
 
   return (
