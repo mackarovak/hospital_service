@@ -48,10 +48,10 @@ function patientToForm(p: PatientProfile): FormState {
 }
 
 const selectClass =
-  "mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100";
+  "mt-1 h-10 w-full rounded-md border border-slate-200 bg-white/95 px-3 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-100";
 
 const textareaClass =
-  "mt-1 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100 min-h-[80px]";
+  "mt-1 w-full resize-y rounded-md border border-slate-200 bg-white/95 px-3 py-2 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 min-h-[80px]";
 
 export function PatientProfileForm() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);

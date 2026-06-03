@@ -70,22 +70,22 @@ export function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
-      <Card className="w-full max-w-2xl overflow-hidden p-0">
-        <div className="border-b border-slate-200 bg-slate-50 px-7 py-6">
-          <p className="text-sm font-medium text-sky-700">MedCat</p>
+    <main className="flex min-h-screen items-center justify-center px-4 py-10">
+      <Card className="w-full max-w-3xl overflow-hidden p-0">
+        <div className="border-b border-slate-100 bg-white px-7 py-6">
+          <p className="text-sm font-semibold text-sky-700">MedCat</p>
           <h1 className="mt-1 text-2xl font-semibold text-slate-950">Регистрация</h1>
           <p className="mt-1 text-sm text-slate-500">Создайте профиль пациента или врача.</p>
         </div>
 
-        <div className="mx-7 mt-6 grid gap-2 rounded-md border border-slate-200 bg-white p-1 sm:grid-cols-2">
+        <div className="mx-7 mt-6 grid gap-2 rounded-md border border-slate-200 bg-slate-50 p-1 sm:grid-cols-2">
           <button
             type="button"
             onClick={() => setRole("PATIENT")}
             className={`rounded px-4 py-2.5 text-sm font-semibold transition ${
               role === "PATIENT"
-                ? "bg-sky-700 text-white shadow-sm"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                ? "bg-sky-700 text-white shadow-sm shadow-sky-900/20"
+                : "text-slate-600 hover:bg-white hover:text-slate-950"
             }`}
           >
             Пациент
@@ -95,8 +95,8 @@ export function RegisterPage() {
             onClick={() => setRole("DOCTOR")}
             className={`rounded px-4 py-2.5 text-sm font-semibold transition ${
               role === "DOCTOR"
-                ? "bg-sky-700 text-white shadow-sm"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                ? "bg-sky-700 text-white shadow-sm shadow-sky-900/20"
+                : "text-slate-600 hover:bg-white hover:text-slate-950"
             }`}
           >
             Врач
@@ -145,7 +145,7 @@ export function RegisterPage() {
                   value={form.specialization_id}
                   onChange={(e) => handleChange("specialization_id", e.target.value)}
                   required
-                  className="mt-1 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                  className="mt-1 min-h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                 >
                   <option value="">— выберите —</option>
                   {specializations.map((s) => (
@@ -175,9 +175,9 @@ export function RegisterPage() {
           </Button>
         </form>
 
-        <p className="border-t border-slate-200 px-7 py-5 text-center text-sm text-slate-500">
+        <p className="border-t border-slate-100 px-7 py-5 text-center text-sm text-slate-500">
           Уже есть аккаунт?{" "}
-          <Link to="/login" className="text-sky-700 hover:underline">
+          <Link to="/login" className="font-semibold text-sky-700 hover:underline">
             Войти
           </Link>
         </p>

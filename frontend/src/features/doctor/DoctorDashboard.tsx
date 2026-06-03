@@ -9,7 +9,7 @@ import { Card } from "../../shared/ui/Card";
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
       <p className="mt-0.5 text-sm text-slate-900">{value || "—"}</p>
     </div>
   );
@@ -32,14 +32,17 @@ export function DoctorDashboard() {
   if (error) return <p className="py-10 text-center text-sm text-red-600">{error}</p>;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Card className="overflow-hidden p-0">
-        <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
-          <p className="text-sm font-medium text-sky-700">Кабинет врача</p>
-          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="border-b border-sky-100 bg-gradient-to-r from-white via-sky-50 to-white px-6 py-6">
+          <div className="flex items-center gap-3 text-sm font-semibold text-sky-700">
+            <span className="medical-mark flex h-8 w-8 items-center justify-center rounded-md bg-sky-700 text-white" aria-hidden="true" />
+            <span>Кабинет врача</span>
+          </div>
+          <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-slate-950">{data?.doctor.full_name || "—"}</h1>
-              <p className="mt-1 text-sm text-slate-500">{data?.doctor.specialization || "Специализация не указана"}</p>
+              <h1 className="text-3xl font-semibold leading-tight text-slate-950">{data?.doctor.full_name || "—"}</h1>
+              <p className="mt-2 text-sm text-slate-600">{data?.doctor.specialization || "Специализация не указана"}</p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link to="/doctor/patients">
@@ -51,7 +54,7 @@ export function DoctorDashboard() {
             </div>
           </div>
         </div>
-        <div className="grid gap-0 divide-y divide-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div className="grid gap-0 divide-y divide-slate-100 md:grid-cols-3 md:divide-x md:divide-y-0">
           <div className="p-5">
             <Field label="ФИО врача" value={data?.doctor.full_name} />
           </div>
@@ -65,7 +68,7 @@ export function DoctorDashboard() {
       </Card>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <Card>
+        <Card className="transition hover:border-sky-200 hover:shadow-md hover:shadow-sky-100">
           <h2 className="text-lg font-semibold text-slate-950">Пациенты</h2>
           <p className="mt-2 text-sm text-slate-600">
             Быстрый доступ к медицинским картам и истории приемов.
@@ -74,7 +77,7 @@ export function DoctorDashboard() {
             <Button variant="secondary">Перейти к списку</Button>
           </Link>
         </Card>
-        <Card>
+        <Card className="transition hover:border-sky-200 hover:shadow-md hover:shadow-sky-100">
           <h2 className="text-lg font-semibold text-slate-950">Приемные окна</h2>
           <p className="mt-2 text-sm text-slate-600">
             Добавляйте свободное время и отслеживайте занятые слоты.
