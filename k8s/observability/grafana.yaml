@@ -197,11 +197,11 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "count(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"level=error|thresholds on metrics\" [$__range]) > 0) or vector(0)",
+              "expr": "count(count_over_time({namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |= \"http_req_failed\" != \"0.00%\" [$__range]) > 0) or vector(0)",
               "refId": "A"
             }
           ],
-          "title": "k6 Problems",
+          "title": "k6 Failed Requests",
           "type": "stat"
         },
         {
@@ -213,8 +213,8 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "green", "value": null},
-                  {"color": "yellow", "value": 3},
-                  {"color": "red", "value": 10}
+                  {"color": "yellow", "value": 15},
+                  {"color": "red", "value": 30}
                 ]
               },
               "unit": "s"
@@ -300,8 +300,8 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "green", "value": null},
-                  {"color": "yellow", "value": 3},
-                  {"color": "red", "value": 10}
+                  {"color": "yellow", "value": 15},
+                  {"color": "red", "value": 30}
                 ]
               },
               "unit": "s"
@@ -338,7 +338,7 @@ data:
           "targets": [
             {
               "datasource": {"type": "loki", "uid": "Loki"},
-              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"checks|http_req_duration|http_req_failed|http_reqs|default ✓|level=error\"",
+              "expr": "{namespace=\"team-1-ns\", filename=~\".*medcat-k6-read-[0-9].*\"} |~ \"checks|http_req_duration|http_req_failed|http_reqs|default ✓\"",
               "refId": "A"
             }
           ],
