@@ -571,15 +571,9 @@ data:
             },
             {
               "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "sum(kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
-              "legendFormat": "failed",
-              "refId": "B"
-            },
-            {
-              "datasource": {"type": "prometheus", "uid": "Prometheus"},
               "expr": "sum(kube_job_status_active{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"})",
               "legendFormat": "active",
-              "refId": "C"
+              "refId": "B"
             }
           ],
           "title": "k6 Job Status Totals",
@@ -606,15 +600,9 @@ data:
               "expr": "kube_job_status_succeeded{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"}",
               "legendFormat": "{{job_name}} succeeded",
               "refId": "A"
-            },
-            {
-              "datasource": {"type": "prometheus", "uid": "Prometheus"},
-              "expr": "kube_job_status_failed{namespace=\"team-1-ns\", job_name=~\"medcat-k6-read-[0-9].*\"}",
-              "legendFormat": "{{job_name}} failed",
-              "refId": "B"
             }
           ],
-          "title": "Individual k6 Jobs",
+          "title": "Individual Successful k6 Jobs",
           "type": "timeseries"
         },
         {
@@ -625,9 +613,7 @@ data:
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
-                  {"color": "green", "value": null},
-                  {"color": "yellow", "value": 1},
-                  {"color": "red", "value": 2}
+                  {"color": "green", "value": null}
                 ]
               },
               "unit": "short"
@@ -652,7 +638,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "Failed k6 Jobs",
+          "title": "Historical Failed k6 Jobs",
           "type": "stat"
         },
         {
