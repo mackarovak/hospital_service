@@ -3,6 +3,7 @@ djangorestframework
 django-cors-headers
 psycopg[binary]
 python-dotenv
+gunicorn
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt<4
