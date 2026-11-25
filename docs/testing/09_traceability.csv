@@ -1,0 +1,16 @@
+ID,Функциональность,Метод,Уровень,Автоматизация,Статус,Примечание
+TC-001,Вход пациента,Pozitive functional,API/UI,pytest+Vitest,Passed,Токен и роль проверяются
+TC-002,Вход с неверным паролем,Negative functional,API/UI,pytest+Vitest,Passed,HTTP 401 и UI ошибка
+TC-003,Запрет роли пациента к врачебному API,Security negative,API,pytest,Passed,HTTP 403
+TC-004,Запрет роли врача к API пациента,Security negative,API,pytest,Passed,HTTP 403
+TC-005,Валидация пробельных ФИО,Boundary/negative,API,Исследовательский прогон,Failed,DEF-001
+TC-006,Пересекающиеся слоты,Boundary/state,API,Исследовательский прогон,Failed,DEF-002
+TC-007,Бронирование прошедшего слота,Negative/state,API,Исследовательский прогон,Failed,DEF-003
+TC-008,Запись на слот,State transition/API,API,HTTPX pytest,Passed in existing flow,Покрыто MVP-flow
+TC-009,Повторная запись занятого слота,Concurrency/state,API,pytest,Recommended,Реализовать отдельный concurrent-test
+TC-010,Создание слота врачом,Boundary/negative,API,pytest,Passed,Past/reverse intervals rejected
+TC-011,Triage симптомов,Cause-effect/table,Unit/API,pytest,Passed,Low/medium/high cases
+TC-012,Поиск и пагинация пациента,Functional/API,API,pytest,Passed,Список и search covered
+TC-013,Запись медкарты врачом,Functional/API,API,pytest,Passed,Create/update authorization covered
+TC-014,Responsive UI,Visual usability/UI,Manual,Chromium manual,Not executed,Необходим скринкаст
+TC-015,k6 smoke-доступность,Load/performance,Load,k6,Passed thresholds,915 iterations; 3 checks failed once

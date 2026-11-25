@@ -43,7 +43,7 @@ services:
       context: ./frontend
     container_name: medcat_frontend
     environment:
-      VITE_API_URL: http://${PUBLIC_HOST:-144.124.240.63}:8000/api/v1
+      VITE_API_URL: /api/v1
     ports:
       - "80:5173"
     depends_on:
@@ -60,7 +60,7 @@ services:
       - medcat_loki_data:/loki
 
   promtail:
-    image: grafana/promtail:2.9.8
+    image: grafana/promtail:3.5.7
     container_name: medcat_promtail
     command: -config.file=/etc/promtail/config.yml
     volumes:
@@ -84,6 +84,16 @@ services:
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - loki
+
+  k6-smoke:
+    image: grafana/k6
+    profiles:
+      - test
+    environment:
+      BASE_URL: http://frontend:5173
+    volumes:
+      - ./load-tests:/scripts:ro
+    command: run --summary-mode=compact /scripts/medcat-smoke.js
 
 volumes:
   medcat_postgres_data:
